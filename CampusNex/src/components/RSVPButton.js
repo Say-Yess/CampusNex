@@ -1,99 +1,172 @@
-import React from 'react';
+// src/components/RSVPButton.js.new
+import React, { useState } from 'react';
+import { Modal, Button, Card, Toggle } from './ui';
 
 const RSVPButton = ({ event, onConfirm, onCancel }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const [notifications, setNotifications] = useState({
+        reminders: true,
+        scheduleUpdates: true,
+        emailUpdates: true
+    });
+
+    const handleToggle = (key) => {
+        setNotifications(prev => ({
+            ...prev,
+            [key]: !prev[key]
+        }));
+    };
+
+    const handleConfirm = () => {
+        onConfirm(notifications);
+        setIsOpen(false);
+    };
+
+    const handleCancel = () => {
+        onCancel();
+        setIsOpen(false);
+    };
+
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-            <div className="relative w-[980px] bg-white rounded-[60px] shadow-2xl p-0 overflow-hidden">
+        <>
+            <Button 
+                variant="primary" 
+                onClick={() => setIsOpen(true)}
+                className="w-full"
+            >
+                RSVP to Event
+            </Button>
+
+            <Modal 
+                isOpen={isOpen} 
+                onClose={() => setIsOpen(false)}
+                size="xl"
+                hideCloseButton={true}
+                className="p-0 rounded-3xl overflow-hidden"
+            >
                 {/* Header */}
-                <div className="w-full h-[190px] bg-royal-blue rounded-t-[60px] flex flex-col justify-center px-16">
-                    <h2 className="text-white text-5xl font-poppins font-bold mb-2 mt-8">{event.title}</h2>
-                    <p className="text-white text-2xl font-poppins font-medium">join for an amazing event</p>
+                <div className="w-full bg-primary py-8 px-12 rounded-t-3xl">
+                    <h2 className="text-white text-3xl font-bold mb-2">{event?.title}</h2>
+                    <p className="text-white text-lg opacity-90">Join for an amazing event</p>
                 </div>
-                {/* Event Info */}
-                <div className="flex gap-8 px-16 py-8">
-                    <div className="flex flex-col items-center">
-                        <div className="w-[129px] h-[129px] bg-[#A9BBED] rounded-full mb-2" />
-                        <div className="w-[73px] h-[73px] outline outline-4 outline-black rounded-full" />
+
+                <div className="p-8">
+                    {/* Event Details */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                        <Card variant="flat" padding="default" className="flex items-center space-x-4">
+                            <div className="flex-shrink-0">
+                                <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-primary" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <div>
+                                <h3 className="text-xl font-bold text-neutral-900">{event?.date}</h3>
+                                <p className="text-neutral-600">{event?.time}</p>
+                            </div>
+                        </Card>
+
+                        <Card variant="flat" padding="default" className="flex items-center space-x-4">
+                            <div className="flex-shrink-0">
+                                <div className="w-16 h-16 bg-secondary-100 rounded-full flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-secondary" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <div>
+                                <h3 className="text-xl font-bold text-neutral-900">{event?.venue}</h3>
+                                <p className="text-neutral-600">Campus Location</p>
+                            </div>
+                        </Card>
                     </div>
-                    <div>
-                        <div className="text-black text-3xl font-inter font-bold mb-2">{event.date}</div>
-                        <div className="text-[#646464] text-2xl font-inter font-medium mb-4">{event.time}</div>
-                    </div>
-                </div>
-                <div className="flex gap-8 px-16 pb-8">
-                    <div className="flex flex-col items-center">
-                        <div className="w-[129px] h-[129px] bg-[#A9EDBE] rounded-full mb-2" />
-                        <div className="w-[58px] h-[74px] bg-[#A60000] rounded-lg" />
-                    </div>
-                    <div>
-                        <div className="text-black text-3xl font-inter font-bold mb-2">{event.venue}</div>
-                        <div className="text-black text-2xl font-inter font-light">Russian Federation Blvd (110)</div>
-                    </div>
-                </div>
-                {/* Google Calendar Integration */}
-                <div className="mx-16 mb-8 bg-[#DDEBFF] rounded-2xl border border-[#7EB3FF] p-8 flex flex-col gap-4">
-                    <div className="flex items-center gap-4 mb-2">
-                        <div className="w-[82px] h-[82px] bg-[#3A66E2] rounded-full flex items-center justify-center">
-                            <span className="text-white text-5xl font-inter font-bold">G</span>
+
+                    {/* Google Calendar Integration */}
+                    <Card variant="default" padding="default" className="mb-8 bg-primary-50 border-primary-200">
+                        <div className="flex items-start space-x-4 mb-4">
+                            <div className="flex-shrink-0">
+                                <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center">
+                                    <span className="text-white text-xl font-bold">G</span>
+                                </div>
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-bold text-neutral-900">Google Calendar Integration</h3>
+                                <p className="text-neutral-700">Automatically sync this event to your Google Calendar with all details, location, and reminders.</p>
+                            </div>
                         </div>
-                        <div>
-                            <div className="text-black text-2xl font-inter font-bold">google calendar integrate</div>
-                            <div className="text-black text-base font-inter font-normal">Automatically sync this event to your Google Calendar with all details, location, and reminders.</div>
+                        <Button 
+                            variant="primary" 
+                            className="w-full flex items-center justify-center space-x-2"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clipRule="evenodd" />
+                            </svg>
+                            <span>Add to Google Calendar</span>
+                        </Button>
+                    </Card>
+
+                    {/* Notification Preferences */}
+                    <Card variant="default" padding="default" className="mb-8 bg-neutral-50 border-neutral-200">
+                        <h3 className="text-lg font-bold text-neutral-900 mb-4">Notification Preferences</h3>
+                        <div className="space-y-4">
+                            <div className="flex justify-between items-center">
+                                <span className="text-neutral-700">Event reminders</span>
+                                <Toggle 
+                                    checked={notifications.reminders}
+                                    onChange={() => handleToggle('reminders')}
+                                />
+                            </div>
+                            <div className="flex justify-between items-center">
+                                <span className="text-neutral-700">Schedule updates</span>
+                                <Toggle 
+                                    checked={notifications.scheduleUpdates}
+                                    onChange={() => handleToggle('scheduleUpdates')}
+                                />
+                            </div>
+                            <div className="flex justify-between items-center">
+                                <span className="text-neutral-700">Email updates</span>
+                                <Toggle 
+                                    checked={notifications.emailUpdates}
+                                    onChange={() => handleToggle('emailUpdates')}
+                                />
+                            </div>
                         </div>
+                    </Card>
+
+                    {/* Action Buttons */}
+                    <div className="flex flex-col md:flex-row gap-4">
+                        <Button 
+                            variant="primary" 
+                            size="lg"
+                            onClick={handleConfirm}
+                            className="flex-1"
+                        >
+                            I'll Attend
+                        </Button>
+                        <Button 
+                            variant="tertiary" 
+                            size="lg"
+                            onClick={handleCancel}
+                            className="flex-1"
+                        >
+                            Can't Make It
+                        </Button>
                     </div>
-                    <button className="w-full h-[60px] bg-[#4894FF] rounded-xl shadow text-white text-2xl font-inter font-bold flex items-center justify-center gap-4">
-                        <span className="w-[50px] h-[50px] outline outline-4 outline-white rounded-full" />
-                        add to google calendar
-                    </button>
                 </div>
-                {/* Notification Preferences */}
-                <div className="mx-16 mb-8 bg-[#F0F0F0] rounded-2xl border border-[#CFCFCF] p-8">
-                    <div className="text-black text-2xl font-inter font-bold mb-4">notification preference</div>
-                    <div className="flex items-center justify-between mb-2">
-                        <span className="text-[#434343] text-xl font-inter font-medium">Event reminders</span>
-                        <div className="w-[74px] h-[28px] bg-[#34C759] rounded-full flex items-center">
-                            <div className="w-[39px] h-[24px] bg-white rounded-full ml-auto" />
-                        </div>
-                    </div>
-                    <div className="flex items-center justify-between mb-2">
-                        <span className="text-[#434343] text-xl font-inter font-medium">schedule Update</span>
-                        <div className="w-[74px] h-[28px] bg-[#34C759] rounded-full flex items-center">
-                            <div className="w-[39px] h-[24px] bg-white rounded-full ml-auto" />
-                        </div>
-                    </div>
-                    <div className="flex items-center justify-between">
-                        <span className="text-[#434343] text-xl font-inter font-medium">Email Update</span>
-                        <div className="w-[74px] h-[28px] bg-[#34C759] rounded-full flex items-center">
-                            <div className="w-[39px] h-[24px] bg-white rounded-full ml-auto" />
-                        </div>
-                    </div>
-                </div>
-                {/* Confirm/Cancel Buttons */}
-                <div className="flex gap-8 mx-16 mb-8">
-                    <button
-                        className="w-[404px] h-[95px] bg-[#00C684] rounded-xl border-2 border-[#10B981] text-white text-3xl font-inter font-bold"
-                        onClick={onConfirm}
-                    >
-                        i’ll attend
-                    </button>
-                    <button
-                        className="w-[404px] h-[95px] bg-[#A7A7A7] rounded-xl border border-[#6C6C6C] text-white text-3xl font-inter font-bold"
-                        onClick={onCancel}
-                    >
-                        can’t make it
-                    </button>
-                </div>
-                {/* Close Icon */}
+
+                {/* Close Button */}
                 <button
-                    className="absolute top-6 right-6 w-12 h-12 flex items-center justify-center"
-                    onClick={onCancel}
+                    className="absolute top-4 right-4 text-white hover:text-neutral-200 focus:outline-none"
+                    onClick={() => setIsOpen(false)}
                     aria-label="Close"
                 >
-                    <span className="block w-8 h-1 bg-gray-400 rotate-45 absolute"></span>
-                    <span className="block w-8 h-1 bg-gray-400 -rotate-45 absolute"></span>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
                 </button>
-            </div>
-        </div>
+            </Modal>
+        </>
     );
 };
 

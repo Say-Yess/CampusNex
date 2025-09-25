@@ -1,13 +1,18 @@
 // src/components/PrimaryButton.js
 import React from 'react';
+import { Button } from './ui';
 
+// This is a wrapper component for backward compatibility
+// It maintains the existing API while using our new Button component
 const PrimaryButton = ({ children, className = '', ...props }) => (
-    <button
-        className={`bg-orange-500 text-white text-xl font-inter font-extrabold capitalize px-8 py-3 rounded-xl shadow-lg ${className}`}
+    <Button
+        variant="primary"
+        size="lg"
+        className={className}
         {...props}
     >
         {children}
-    </button>
+    </Button>
 );
 
 export default PrimaryButton;

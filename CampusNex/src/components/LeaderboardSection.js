@@ -1,163 +1,155 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { Leaderboard } from './ui';
 
-const categories = [
-    'Concerts & Gigs',
-    'Festivals & Lifestyle',
-    'Business & Networking',
-    'Food & Drinks',
-    'Performing Arts',
-    'Sports & Outdoors',
-    'Exhibitions',
-    'Workshops, Conferences & Classes',
-];
-
-const companyInfo = [
-    'About Us',
-    'Contact Us',
-    'Careers',
-    'FAQs',
-    'Terms of Service',
-    'Privacy Policy',
-];
-
-const helpInfo = [
-    'Account Support',
-    'Listing Events',
-    'Event Ticketing',
-    'Ticket Purchase Terms & Conditions',
-];
-
-const socialLinks = [
-    'Facebook',
-    'Instagram',
-    'Twitter',
-    'Youtube',
-];
+// API base URL - should be moved to environment variables
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 const LeaderboardSection = () => {
+    const [activeTab, setActiveTab] = useState('students');
+    const [activeCategory, setActiveCategory] = useState('all');
+    const [leaderboardData, setLeaderboardData] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const [pagination, setPagination] = useState({
+        currentPage: 1,
+        totalPages: 1,
+        totalItems: 0,
+        hasNextPage: false,
+        hasPrevPage: false
+    });
+
+    const categories = [
+        { label: 'All Categories', value: 'all' },
+        { label: 'Academic', value: 'academic' },
+        { label: 'Social', value: 'social' },
+        { label: 'Sports', value: 'sports' },
+        { label: 'Arts', value: 'arts' }
+    ];
+
+    // Fetch leaderboard data from API
+    const fetchLeaderboardData = async (type = 'students', page = 1, limit = 10) => {
+        try {
+            setLoading(true);
+            setError(null);
+
+            const response = await fetch(
+                `${API_BASE_URL}/leaderboard?type=${type}&page=${page}&limit=${limit}&sortBy=totalEvents&order=desc`
+            );
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch leaderboard data');
+            }
+
+            const data = await response.json();
+
+            if (data.success) {
+                setLeaderboardData(data.data.leaderboard);
+                setPagination(data.data.pagination);
+            } else {
+                throw new Error(data.message || 'Failed to load leaderboard');
+            }
+
+        } catch (err) {
+            console.error('Error fetching leaderboard:', err);
+            setError(err.message);
+            setLeaderboardData([]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Load data when tab changes
+    useEffect(() => {
+        fetchLeaderboardData(activeTab, 1, 10);
+    }, [activeTab]);
+
+    // Handle tab change
+    const handleTabChange = (tab) => {
+        setActiveTab(tab);
+        setPagination({ ...pagination, currentPage: 1 });
+    };
+
+    // Handle page change
+    const handlePageChange = (page) => {
+        setPagination({ ...pagination, currentPage: page });
+        fetchLeaderboardData(activeTab, page, 10);
+    };
+
+    // Handle load more
+    const handleLoadMore = () => {
+        const nextPage = pagination.currentPage + 1;
+        fetchLeaderboardData(activeTab, nextPage, 10);
+    };
+
     return (
-        <div className="relative w-full min-h-screen bg-white overflow-x-hidden">
-            {/* Top NavBar (reuse Navbar component if available) */}
-            {/* Main Gradient Banner */}
-            <div className="w-full h-[200px] bg-gradient-to-br from-main to-[#3256BD] absolute top-[75px] left-0 overflow-hidden z-10">
-                <div className="absolute left-1/2 -translate-x-1/2 top-10 text-white text-5xl md:text-6xl font-inter font-bold">Campus Spotlight</div>
-                <div className="absolute left-1/2 -translate-x-1/2 top-32 text-white text-lg md:text-xl font-inter font-medium">Celebrating our most engaged students and outstanding organizers</div>
-            </div>
+        <div className="w-full bg-gradient-to-br from-gray-50 to-white py-12 md:py-16 lg:py-20 min-h-screen">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="text-center mb-12">
+                    <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent">
+                        Campus Spotlight
+                    </h1>
+                    <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto">
+                        Celebrating our most engaged students and outstanding organizers who make our campus community vibrant
+                    </p>
+                </div>
 
-            {/* Tabs */}
-            <div className="absolute w-[90%] max-w-[1240px] left-1/2 -translate-x-1/2 top-[256px] flex flex-row gap-4 z-20">
-                <div className="w-1/2 bg-orange-400 border border-[#B34900] rounded-lg flex items-center justify-center h-[60px] text-white text-lg md:text-xl font-inter font-bold">Top Student</div>
-                <div className="w-1/2 bg-white border border-[#B34900] rounded-lg flex items-center justify-center h-[60px] text-black text-lg md:text-xl font-inter font-bold">Top Organizer</div>
-            </div>
-
-            {/* Top 3 Students Section */}
-            <div className="absolute w-full flex flex-col items-center top-[364px] z-30">
-                <div className="text-black text-2xl md:text-3xl lg:text-4xl font-inter font-bold capitalize mb-6">top 3 Most active student</div>
-                <div className="flex flex-row justify-center items-end gap-8 md:gap-16">
-                    {/* 3rd Place */}
-                    <div className="flex flex-col items-center">
-                        <div className="w-[170px] h-[170px] bg-gray-300 rounded-full mb-2" />
-                        <div className="w-[280px] h-[400px] bg-[#C0C0C0] rounded-3xl -mt-24 mb-2" />
-                        <div className="text-black text-xl md:text-2xl font-inter font-semibold">THAM  NISAYAM</div>
-                        <div className="text-black text-lg font-inter font-semibold">Third Rank</div>
-                        <div className="text-gray-700 text-base font-inter font-medium">Business Admin</div>
-                        <div className="w-[180px] h-[30px] bg-[#E7E5E5] rounded-full mt-2 flex items-center justify-center">
-                            <span className="text-gray-700 text-sm font-inter font-medium">29 Attended</span>
-                        </div>
-                    </div>
-                    {/* 1st Place */}
-                    <div className="flex flex-col items-center">
-                        <div className="w-[200px] h-[200px] bg-gray-300 rounded-full mb-2" />
-                        <div className="w-[300px] h-[440px] bg-[#F7B82F] rounded-3xl -mt-32 mb-2" />
-                        <div className="text-black text-2xl md:text-3xl font-inter font-semibold">THAM  NISAYAM</div>
-                        <div className="text-black text-2xl font-inter font-semibold">First Rank</div>
-                        <div className="text-gray-700 text-base font-inter font-medium">Computer Science</div>
-                        <div className="w-[190px] h-[30px] bg-[#FFE8B5] rounded-full mt-2 flex items-center justify-center">
-                            <span className="text-gray-700 text-sm font-inter font-medium">39 Attended</span>
-                        </div>
-                    </div>
-                    {/* 2nd Place */}
-                    <div className="flex flex-col items-center">
-                        <div className="w-[170px] h-[170px] bg-gray-300 rounded-full mb-2" />
-                        <div className="w-[280px] h-[400px] bg-[#CD7F32] rounded-3xl -mt-24 mb-2" />
-                        <div className="text-black text-xl md:text-2xl font-inter font-semibold">THAM  NISAYAM</div>
-                        <div className="text-black text-lg font-inter font-semibold">Second Rank</div>
-                        <div className="text-gray-700 text-base font-inter font-medium">Fashion Design</div>
-                        <div className="w-[180px] h-[30px] bg-[#FAB878] rounded-full mt-2 flex items-center justify-center">
-                            <span className="text-gray-700 text-sm font-inter font-medium">35 Attended</span>
-                        </div>
+                {/* Tabs */}
+                <div className="flex justify-center mb-12 px-4">
+                    <div className="flex w-full max-w-md rounded-xl overflow-hidden border shadow-lg bg-gray-50">
+                        <button
+                            onClick={() => handleTabChange('students')}
+                            disabled={loading}
+                            className={`flex-1 px-4 py-3 md:px-6 md:py-4 font-medium text-sm md:text-base transition-all duration-300 ${activeTab === 'students'
+                                ? 'bg-primary text-white shadow-md transform scale-105'
+                                : 'bg-transparent text-gray-700 hover:bg-gray-100'
+                                } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        >
+                            👥 Top Students
+                        </button>
+                        <button
+                            onClick={() => handleTabChange('organizers')}
+                            disabled={loading}
+                            className={`flex-1 px-4 py-3 md:px-6 md:py-4 font-medium text-sm md:text-base transition-all duration-300 ${activeTab === 'organizers'
+                                ? 'bg-primary text-white shadow-md transform scale-105'
+                                : 'bg-transparent text-gray-700 hover:bg-gray-100'
+                                } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        >
+                            🏆 Top Organizers
+                        </button>
                     </div>
                 </div>
-            </div>
 
-            {/* Complete Leaderboard Section */}
-            <div className="absolute w-[90%] max-w-[1350px] left-1/2 -translate-x-1/2 top-[985px] z-40">
-                <div className="bg-[#3360E3] rounded-t-2xl h-[100px] flex items-center justify-center">
-                    <span className="text-white text-3xl md:text-4xl font-inter font-semibold">Complete Leaderboard</span>
-                </div>
-                <div className="bg-[#F4F4F4] rounded-b-2xl min-h-[882px] pb-8">
-                    {[3, 4, 5, 6, 7, 8, 9, 10].map((rank, idx) => (
-                        <div key={rank} className="flex items-center bg-[#C1CDF1] rounded-lg my-4 mx-8 h-[73px] relative">
-                            <div className="w-10 h-10 bg-gradient-to-br from-[#4C77F3] to-[#2C458D] rounded-full flex items-center justify-center ml-6">
-                                <span className="text-white text-lg font-inter font-medium">{rank}</span>
-                            </div>
-                            <div className="ml-6 flex flex-col justify-center">
-                                <span className="text-black text-lg font-inter font-semibold">THAM  NISAYAM</span>
-                                <span className="text-[#383838] text-sm font-inter font-normal">Business Admin</span>
-                            </div>
-                            <div className="absolute right-32 top-1/2 -translate-y-1/2 text-main text-lg font-inter font-bold">{27 - idx}</div>
-                            <div className="absolute right-16 top-1/2 -translate-y-1/2 text-[#535353] text-lg font-inter font-semibold">Events</div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-
-            {/* More Button */}
-            <div className="absolute left-1/2 -translate-x-1/2 top-[1901px] z-50">
-                <div className="w-[300px] h-[50px] bg-gradient-radial from-[#052275] to-[#375ECC] rounded-2xl flex items-center justify-center">
-                    <span className="text-white text-2xl font-inter font-semibold">More</span>
-                </div>
-            </div>
-
-            {/* Footer Section */}
-            <div className="absolute w-full left-0 top-[2012px] bg-main h-[482px] flex flex-col md:flex-row justify-between px-24 py-12 z-60">
-                {/* Company Info */}
-                <div className="flex flex-col gap-6">
-                    <span className="text-white text-2xl font-montserrat font-semibold mb-2">Company Info</span>
-                    {companyInfo.map((item) => (
-                        <span key={item} className="text-[#A9A9A9] text-lg font-open-sans font-normal">{item}</span>
-                    ))}
-                </div>
-                {/* Help */}
-                <div className="flex flex-col gap-6">
-                    <span className="text-white text-2xl font-montserrat font-semibold mb-2">Help</span>
-                    {helpInfo.map((item) => (
-                        <span key={item} className="text-[#A9A9A9] text-lg font-open-sans font-normal">{item}</span>
-                    ))}
-                </div>
-                {/* Categories */}
-                <div className="flex flex-col gap-6">
-                    <span className="text-white text-2xl font-montserrat font-semibold mb-2">Categories</span>
-                    {categories.map((item) => (
-                        <span key={item} className="text-[#A9A9A9] text-lg font-open-sans font-normal">{item}</span>
-                    ))}
-                </div>
-                {/* Follow Us */}
-                <div className="flex flex-col gap-6">
-                    <span className="text-white text-2xl font-montserrat font-semibold mb-2">Follow Us</span>
-                    {socialLinks.map((item) => (
-                        <span key={item} className="text-[#A9A9A9] text-lg font-open-sans font-normal">{item}</span>
-                    ))}
-                </div>
-                {/* Become an Organizer */}
-                <div className="absolute left-1/2 -translate-x-1/2 top-64 text-white text-2xl font-montserrat font-bold">Become an Organizer</div>
-                {/* Copyright */}
-                <div className="absolute left-1/2 -translate-x-1/2 bottom-8 flex items-center gap-2">
-                    <div className="w-4 h-4 border border-[#A9A9A9] rounded-full relative flex items-center justify-center">
-                        <div className="w-2.5 h-2.5 border border-[#A9A9A9] rounded-full absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" />
+                {/* Error message */}
+                {error && (
+                    <div className="max-w-3xl mx-auto mb-8 p-4 bg-red-50 border border-red-200 rounded-lg">
+                        <p className="text-red-700 text-center">
+                            {error}. Please try refreshing the page.
+                        </p>
                     </div>
-                    <span className="text-[#A9A9A9] text-lg font-open-sans font-normal">2025 CampusNex. All rights reserved.</span>
-                </div>
+                )}
+
+                {/* Leaderboard */}
+                <Leaderboard
+                    title={activeTab === 'students' ? "Most Active Students" : "Top Event Organizers"}
+                    subtitle={
+                        activeTab === 'students'
+                            ? "Based on event attendance this semester"
+                            : "Based on number of events hosted this semester"
+                    }
+                    leaders={leaderboardData}
+                    categories={categories}
+                    activeCategory={activeCategory}
+                    onCategoryChange={setActiveCategory}
+                    unit="Events"
+                    loading={loading}
+                    currentPage={pagination.currentPage}
+                    totalPages={pagination.totalPages}
+                    onPageChange={handlePageChange}
+                    hasNextPage={pagination.hasNextPage}
+                    hasPrevPage={pagination.hasPrevPage}
+                    onLoadMore={handleLoadMore}
+                    showLoadMore={true}
+                />
             </div>
         </div>
     );

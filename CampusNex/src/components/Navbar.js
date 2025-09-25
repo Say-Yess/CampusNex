@@ -1,25 +1,50 @@
 // src/components/Navbar.js
 import React from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../services/AuthContext';
+import { Navbar as UINavbar } from './ui';
 
-const Navbar = () => (
-    <nav className="w-full h-20 bg-gray-200 flex items-center px-8 justify-between shadow-sm">
-        <div className="flex items-center space-x-4">
-            <div className="relative flex items-center">
-                <span className="text-main text-5xl font-lalezar">CampusNex</span>
-                {/* Logo shapes can be added here if needed */}
-            </div>
-            <div className="flex space-x-6 ml-16">
-                <span className="text-main text-2xl font-montserrat font-semibold">Home</span>
-                <span className="text-main text-2xl font-montserrat font-medium">Events</span>
-                <span className="text-main text-2xl font-montserrat font-medium">About</span>
-            </div>
-        </div>
-        <div className="flex items-center space-x-4">
-            <button className="text-main text-2xl font-montserrat font-medium px-5 py-2">Login</button>
-            <button className="text-main text-2xl font-montserrat font-medium px-5 py-2">Create Event</button>
-            <button className="bg-orange-500 text-gray-200 text-2xl font-montserrat font-medium px-5 py-2 rounded-lg">Sign Up</button>
-        </div>
-    </nav>
-);
+const Navbar = () => {
+    const { isAuthenticated, user, logout } = useAuth();
+    const navigate = useNavigate();
+    const location = useLocation();
+
+    const handleLogout = () => {
+        logout();
+        navigate('/login');
+    };
+
+    const menuItems = [
+        { label: 'Home', path: '/' },
+        { label: 'Events', path: '/discovery' },
+        { label: 'About', path: '/about' },
+        ...(isAuthenticated ? [
+            { label: 'Leaderboard', path: '/leaderboard' }
+        ] : [])
+    ];
+
+    const rightMenuItems = isAuthenticated
+        ? [
+            { label: 'Profile', path: '/profile' },
+            ...(user?.role === 'organizer'
+                ? [{ label: 'Create Event', path: '/create-event' }]
+                : [{ label: 'My Events', path: '/interested-events' }]
+            ),
+            { label: 'Logout', onClick: handleLogout, type: 'button', variant: 'primary' }
+        ]
+        : [
+            { label: 'Login', path: '/login' },
+            { label: 'Sign Up', path: '/signup', type: 'button', variant: 'primary' }
+        ];
+
+    return (
+        <UINavbar
+            logo={<Link to="/" className="text-primary text-3xl md:text-4xl font-bold">CampusNex</Link>}
+            menuItems={menuItems}
+            rightMenuItems={rightMenuItems}
+            currentPath={location.pathname}
+        />
+    );
+};
 
 export default Navbar;

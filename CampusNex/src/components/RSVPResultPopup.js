@@ -1,32 +1,65 @@
 import React from 'react';
+import { Modal, Button, Alert } from './ui';
 
 const RSVPResultPopup = ({ confirmed, onClose }) => {
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
-            <div className="relative w-[700px] h-[120px] bg-[#85CEB6]/30 rounded-2xl border border-[#10B981] flex items-center px-8">
-                <div className="flex items-center">
-                    <div className="w-12 h-12 mr-6 flex items-center justify-center">
-                        {confirmed ? (
-                            <span className="block w-11 h-9 border-4 border-[#10B981] rounded-lg"></span>
-                        ) : (
-                            <span className="block w-10 h-10 border-4 border-[#10B981] rounded-full"></span>
-                        )}
-                    </div>
-                    <div>
-                        {confirmed ? (
-                            <span className="text-[#10B981] text-2xl font-inter font-medium capitalize">RSVP confirmed! We're excited to see you there.</span>
-                        ) : (
-                            <span className="text-[#10B981] text-2xl font-inter font-medium capitalize">Thank you for letting us know.<br />We’ll miss you</span>
-                        )}
-                    </div>
+        <Modal 
+            isOpen={true} 
+            onClose={onClose}
+            size="md"
+            className="p-6"
+        >
+            <div className="text-center">
+                {confirmed ? (
+                    <>
+                        <div className="w-20 h-20 bg-green-100 rounded-full mx-auto flex items-center justify-center mb-6">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                        </div>
+                        <h3 className="text-2xl font-bold text-gray-900 mb-2">RSVP Confirmed!</h3>
+                        <p className="text-gray-600 mb-6">
+                            You're all set! We've added this event to your calendar and will send you reminders as the date approaches.
+                        </p>
+                        <Alert type="success" className="mb-6">
+                            Your spot has been reserved.
+                        </Alert>
+                    </>
+                ) : (
+                    <>
+                        <div className="w-20 h-20 bg-gray-100 rounded-full mx-auto flex items-center justify-center mb-6">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </div>
+                        <h3 className="text-2xl font-bold text-gray-900 mb-2">RSVP Cancelled</h3>
+                        <p className="text-gray-600 mb-6">
+                            You've declined this event. You can always RSVP again if your plans change.
+                        </p>
+                        <Alert type="info" className="mb-6">
+                            Your response has been recorded.
+                        </Alert>
+                    </>
+                )}
+                
+                <div className="flex justify-center gap-4">
+                    <Button 
+                        variant="primary" 
+                        onClick={onClose}
+                    >
+                        {confirmed ? 'Great!' : 'Close'}
+                    </Button>
+                    {confirmed && (
+                        <Button 
+                            variant="secondary" 
+                            onClick={onClose}
+                        >
+                            View Event Details
+                        </Button>
+                    )}
                 </div>
-                <button
-                    className="absolute top-2 right-4 text-gray-400 text-2xl font-bold"
-                    onClick={onClose}
-                    aria-label="Close"
-                >×</button>
             </div>
-        </div>
+        </Modal>
     );
 };
 
