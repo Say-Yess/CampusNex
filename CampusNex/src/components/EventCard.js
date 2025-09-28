@@ -13,12 +13,13 @@ const EventCard = ({
     description,
     registered,
     image,
-    onJoin
+    onJoin,
+    isAuthenticated = false
 }) => {
     const navigate = useNavigate();
 
     const handleDetailsClick = () => {
-        navigate(`/event/${id}`);
+        navigate(`/events/${id}`);
     };
 
     // Truncate description if it's too long
@@ -94,8 +95,9 @@ const EventCard = ({
                         size="sm"
                         onClick={onJoin}
                         className="flex-1"
+                        title={!isAuthenticated ? "Login required to join events" : ""}
                     >
-                        Join Now
+                        {isAuthenticated ? "Join Now" : "Join (Login Required)"}
                     </Button>
                 </div>
             </div>

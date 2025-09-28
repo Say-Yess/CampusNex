@@ -4,6 +4,29 @@ import { Leaderboard } from './ui';
 // API base URL - should be moved to environment variables
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
+// Fallback data when API is not available
+const fallbackStudents = [
+    { id: 1, name: 'Sarah Johnson', department: 'Computer Science', profileImage: null, totalEvents: 39, rank: 1 },
+    { id: 2, name: 'Michael Chen', department: 'Business Administration', profileImage: null, totalEvents: 35, rank: 2 },
+    { id: 3, name: 'Emma Rodriguez', department: 'Fashion Design', profileImage: null, totalEvents: 31, rank: 3 },
+    { id: 4, name: 'James Lee', department: 'Engineering', profileImage: null, totalEvents: 28, rank: 4 },
+    { id: 5, name: 'Olivia Kim', department: 'Psychology', profileImage: null, totalEvents: 26, rank: 5 },
+    { id: 6, name: 'David Patel', department: 'Media Studies', profileImage: null, totalEvents: 24, rank: 6 },
+    { id: 7, name: 'Sophia Wang', department: 'Biology', profileImage: null, totalEvents: 21, rank: 7 },
+    { id: 8, name: 'Noah Garcia', department: 'Economics', profileImage: null, totalEvents: 20, rank: 8 }
+];
+
+const fallbackOrganizers = [
+    { id: 1, name: 'Student Union', department: 'Campus Organization', profileImage: null, totalEvents: 28, rank: 1 },
+    { id: 2, name: 'CS Society', department: 'Academic Club', profileImage: null, totalEvents: 25, rank: 2 },
+    { id: 3, name: 'Arts Collective', department: 'Creative Club', profileImage: null, totalEvents: 22, rank: 3 },
+    { id: 4, name: 'Business Association', department: 'Academic Club', profileImage: null, totalEvents: 20, rank: 4 },
+    { id: 5, name: 'International Club', department: 'Cultural Club', profileImage: null, totalEvents: 19, rank: 5 },
+    { id: 6, name: 'Sports Council', department: 'Athletics', profileImage: null, totalEvents: 18, rank: 6 },
+    { id: 7, name: 'Music Society', department: 'Performing Arts', profileImage: null, totalEvents: 17, rank: 7 },
+    { id: 8, name: 'Debate Team', department: 'Academic Club', profileImage: null, totalEvents: 15, rank: 8 }
+];
+
 const LeaderboardSection = () => {
     const [activeTab, setActiveTab] = useState('students');
     const [activeCategory, setActiveCategory] = useState('all');
@@ -37,7 +60,7 @@ const LeaderboardSection = () => {
             );
 
             if (!response.ok) {
-                throw new Error('Failed to fetch leaderboard data');
+                throw new Error('API not available, using sample data');
             }
 
             const data = await response.json();
@@ -50,15 +73,29 @@ const LeaderboardSection = () => {
             }
 
         } catch (err) {
-            console.error('Error fetching leaderboard:', err);
-            setError(err.message);
-            setLeaderboardData([]);
+            console.warn('API not available, using fallback data:', err.message);
+
+            // Use fallback data when API is not available
+            const fallbackData = type === 'students' ? fallbackStudents : fallbackOrganizers;
+            const startIndex = (page - 1) * limit;
+            const endIndex = startIndex + limit;
+            const paginatedData = fallbackData.slice(startIndex, endIndex);
+
+            setLeaderboardData(fallbackData); // Show all data for demo
+            setPagination({
+                currentPage: 1,
+                totalPages: 1,
+                totalItems: fallbackData.length,
+                hasNextPage: false,
+                hasPrevPage: false
+            });
+
+            // Clear error since we have fallback data
+            setError(null);
         } finally {
             setLoading(false);
         }
-    };
-
-    // Load data when tab changes
+    };    // Load data when tab changes
     useEffect(() => {
         fetchLeaderboardData(activeTab, 1, 10);
     }, [activeTab]);
@@ -119,11 +156,11 @@ const LeaderboardSection = () => {
                     </div>
                 </div>
 
-                {/* Error message */}
-                {error && (
-                    <div className="max-w-3xl mx-auto mb-8 p-4 bg-red-50 border border-red-200 rounded-lg">
-                        <p className="text-red-700 text-center">
-                            {error}. Please try refreshing the page.
+                {/* Info message when using sample data */}
+                {!error && leaderboardData.length > 0 && (
+                    <div className="max-w-3xl mx-auto mb-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <p className="text-blue-700 text-center text-sm">
+                            📊 Displaying sample leaderboard data. Start the backend server to see live data.
                         </p>
                     </div>
                 )}

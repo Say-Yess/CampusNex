@@ -128,6 +128,85 @@ router.post('/login', [
     }
 });
 
+// @route   POST /api/auth/signup
+// @desc    Register a new user (alias for register)
+// @access  Public
+router.post('/signup', [
+    body('email').isEmail().withMessage('Please provide a valid email'),
+    body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),
+    body('firstName').notEmpty().withMessage('First name is required'),
+    body('lastName').notEmpty().withMessage('Last name is required'),
+    body('role').optional().isIn(['student', 'organizer']).withMessage('Role must be either student or organizer')
+], validate, async (req, res) => {
+    try {
+        const { email, password, firstName, lastName, role = 'student' } = req.body;
+
+        // Check if user already exists
+        const existingUser = await User.findOne({ where: { email } });
+        if (existingUser) {
+            return res.status(400).json({
+                success: false,
+                message: 'User with this email already exists'
+            });
+        }
+
+        // Create new user
+        const user = await User.create({
+            email,
+            password,
+            firstName,
+            lastName,
+            role
+        });
+
+        // Generate JWT token
+        const token = jwt.sign(
+            { id: user.id, email: user.email, role: user.role },
+            process.env.JWT_SECRET,
+            { expiresIn: process.env.JWT_EXPIRES_IN }
+        );
+
+        res.status(201).json({
+            success: true,
+            message: 'User registered successfully',
+            user: {
+                id: user.id,
+                email: user.email,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                role: user.role
+            },
+            token
+        });
+    } catch (error) {
+        console.error('Signup error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error during signup'
+        });
+    }
+});
+
+// @route   GET /api/auth/google
+// @desc    OAuth with Google (placeholder)
+// @access  Public
+router.get('/google', (req, res) => {
+    res.status(501).json({
+        success: false,
+        message: 'Google OAuth not yet implemented. Please use email signup.'
+    });
+});
+
+// @route   GET /api/auth/facebook
+// @desc    OAuth with Facebook (placeholder)
+// @access  Public
+router.get('/facebook', (req, res) => {
+    res.status(501).json({
+        success: false,
+        message: 'Facebook OAuth not yet implemented. Please use email signup.'
+    });
+});
+
 // @route   GET /api/auth/me
 // @desc    Get current user profile
 // @access  Private

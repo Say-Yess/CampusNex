@@ -88,6 +88,7 @@ module.exports = {
         'card-hover': '0 6px 12px rgba(0, 0, 0, 0.15)',
         'dropdown': '0 2px 5px rgba(0, 0, 0, 0.1)',
         'button': '0 1px 3px rgba(0, 0, 0, 0.12)',
+        '3xl': '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
       },
       borderRadius: {
         'xl': '0.75rem',
@@ -116,6 +117,7 @@ module.exports = {
         'slideOutToBottom': 'slideOutToBottom 0.5s ease-in',
         'slideOutToLeft': 'slideOutToLeft 0.5s ease-in',
         'slideOutToRight': 'slideOutToRight 0.5s ease-in',
+        'blob': 'blob 7s infinite',
       },
       keyframes: {
         fadeIn: {
@@ -197,6 +199,12 @@ module.exports = {
         slideOutToRight: {
           '0%': { transform: 'translateX(0)', opacity: '1' },
           '100%': { transform: 'translateX(100%)', opacity: '0' },
+        },
+        blob: {
+          '0%': { transform: 'translate(0px, 0px) scale(1)' },
+          '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+          '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+          '100%': { transform: 'translate(0px, 0px) scale(1)' },
         },
       },
     },

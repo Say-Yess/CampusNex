@@ -34,7 +34,7 @@ const Navbar = () => {
         ]
         : [
             { label: 'Login', path: '/login' },
-            { label: 'Sign Up', path: '/signup', type: 'button', variant: 'primary' }
+            { label: 'Sign Up', path: '/signup', type: 'button', variant: 'primary', onClick: () => navigate('/signup') }
         ];
 
     return (

@@ -121,213 +121,347 @@ const Profile = () => {
     }
 
     return (
-        <div className="min-h-screen bg-white flex flex-col">
+        <div className="min-h-screen bg-gray-50 flex flex-col">
             <Navbar />
-            <main className="flex flex-1 px-8 py-8">
-                {/* Sidebar */}
-                <aside className="w-64 pr-8 border-r border-gray-200 text-gray-700">
-                    <div className="mb-8">Hello, {profile?.firstName || 'User'}.</div>
-                    <ul className="space-y-4 font-semibold">
-                        <li className="text-blue-600 cursor-pointer">Profile</li>
-                        <li className="cursor-pointer"><Link to="/interested-events">My Events</Link></li>
-                        <li className="cursor-pointer"><Link to="/discovery">Discover Events</Link></li>
-                        <li className="cursor-pointer"><Link to="/settings">Settings</Link></li>
-                        <li className="cursor-pointer"><Link to="/notifications">Notifications</Link></li>
-                        <li className="cursor-pointer">Help & Support</li>
-                        <li className="cursor-pointer text-red-500" onClick={handleLogout}>Log Out</li>
-                    </ul>
-                </aside>
-
-                {/* Main Profile Section */}
-                <section className="flex-1 px-8">
-                    <h1 className="text-3xl font-bold mb-2">Profile</h1>
-                    <p className="mb-6 text-gray-600">Manage your account, events, and settings</p>
-
-                    {error && (
-                        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6">
-                            {error}
-                        </div>
-                    )}
-
-                    {/* User Info */}
-                    <div className="bg-white border rounded-lg p-6 mb-6 flex items-center gap-8">
-                        <img
-                            src={profile?.profilePicture || "/logo192.png"}
-                            alt="User Avatar"
-                            className="h-20 w-20 rounded-full border object-cover"
-                        />
-                        <div>
-                            <div className="text-xl font-bold">
-                                {isEditing ? (
-                                    <form onSubmit={handleSubmit} className="space-y-4">
-                                        <div className="flex gap-4">
-                                            <input
-                                                type="text"
-                                                name="firstName"
-                                                value={formData.firstName}
-                                                onChange={handleInputChange}
-                                                className="border rounded px-2 py-1"
-                                                placeholder="First Name"
-                                            />
-                                            <input
-                                                type="text"
-                                                name="lastName"
-                                                value={formData.lastName}
-                                                onChange={handleInputChange}
-                                                className="border rounded px-2 py-1"
-                                                placeholder="Last Name"
-                                            />
-                                        </div>
-                                        <div>
-                                            <textarea
-                                                name="bio"
-                                                value={formData.bio}
-                                                onChange={handleInputChange}
-                                                className="border rounded px-2 py-1 w-full"
-                                                placeholder="Bio"
-                                                rows="3"
-                                            />
-                                        </div>
-                                        <div className="flex gap-4">
-                                            <input
-                                                type="text"
-                                                name="major"
-                                                value={formData.major}
-                                                onChange={handleInputChange}
-                                                className="border rounded px-2 py-1"
-                                                placeholder="Major"
-                                            />
-                                            <input
-                                                type="text"
-                                                name="yearOfStudy"
-                                                value={formData.yearOfStudy}
-                                                onChange={handleInputChange}
-                                                className="border rounded px-2 py-1"
-                                                placeholder="Year of Study"
-                                            />
-                                        </div>
-                                        <div className="flex gap-4">
-                                            <button
-                                                type="submit"
-                                                className="bg-green-500 text-white px-4 py-2 rounded font-semibold"
-                                            >
-                                                Save
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => setIsEditing(false)}
-                                                className="bg-gray-300 text-gray-700 px-4 py-2 rounded font-semibold"
-                                            >
-                                                Cancel
-                                            </button>
-                                        </div>
-                                    </form>
-                                ) : (
-                                    <>
-                                        <div>{profile?.firstName} {profile?.lastName}</div>
-                                        <div className="text-gray-500">{user?.email}</div>
-                                        {profile?.bio && (
-                                            <div className="text-gray-600 text-sm mt-2">{profile.bio}</div>
-                                        )}
-                                        {(profile?.major || profile?.yearOfStudy) && (
-                                            <div className="text-gray-600 text-sm">
-                                                {profile.major} {profile.yearOfStudy ? `- Year ${profile.yearOfStudy}` : ''}
-                                            </div>
-                                        )}
-                                        <button
-                                            className="mt-2 bg-blue-500 text-white px-4 py-2 rounded font-semibold"
-                                            onClick={() => setIsEditing(true)}
-                                        >
-                                            Edit Profile
-                                        </button>
-                                    </>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Settings & Notifications */}
-                    <div className="flex gap-6 mb-6">
-                        <div className="flex-1 bg-white border rounded-lg p-4">
-                            <h2 className="font-semibold mb-4">Account Settings</h2>
-                            <button
-                                className="bg-blue-500 text-white py-2 rounded font-semibold w-full mb-2"
-                                onClick={() => setIsEditing(true)}
-                            >
-                                Update Profile
-                            </button>
-                            <button className="bg-green-500 text-white py-2 rounded font-semibold w-full mb-2">
-                                Notification Settings
-                            </button>
-                            <button className="bg-orange-400 text-white py-2 rounded font-semibold w-full">
-                                Change Password
-                            </button>
-                        </div>
-                        <div className="flex-1 bg-white border rounded-lg p-4">
-                            <h2 className="font-semibold mb-4">Notifications</h2>
-                            <div className="space-y-2">
-                                <div className="flex items-center justify-between">
-                                    <span>Email Updates</span>
-                                    <input
-                                        type="checkbox"
-                                        name="emailUpdates"
-                                        checked={notifications.emailUpdates}
-                                        onChange={handleNotificationChange}
-                                        className="form-checkbox h-5 w-5 text-blue-600"
+            <main className="flex-1 py-8">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                        {/* Sidebar */}
+                        <div className="lg:col-span-1">
+                            <div className="bg-white rounded-lg shadow-sm p-6">
+                                <div className="text-center mb-6">
+                                    <img
+                                        src={profile?.profilePicture || "/logo192.png"}
+                                        alt="Profile"
+                                        className="w-20 h-20 rounded-full mx-auto mb-4 border-4 border-gray-100 object-cover"
                                     />
+                                    <h2 className="text-lg font-semibold text-gray-900">
+                                        {profile?.firstName} {profile?.lastName}
+                                    </h2>
+                                    <p className="text-sm text-gray-500">{user?.email}</p>
+                                    <div className="mt-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                        {user?.role || 'Student'}
+                                    </div>
                                 </div>
-                                <div className="flex items-center justify-between">
-                                    <span>Event Reminders</span>
-                                    <input
-                                        type="checkbox"
-                                        name="eventReminders"
-                                        checked={notifications.eventReminders}
-                                        onChange={handleNotificationChange}
-                                        className="form-checkbox h-5 w-5 text-blue-600"
-                                    />
-                                </div>
-                                <div className="flex items-center justify-between">
-                                    <span>Promotional Offers</span>
-                                    <input
-                                        type="checkbox"
-                                        name="promotionalOffers"
-                                        checked={notifications.promotionalOffers}
-                                        onChange={handleNotificationChange}
-                                        className="form-checkbox h-5 w-5 text-blue-600"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
 
-                    {/* Event History */}
-                    <div className="bg-white border rounded-lg p-4">
-                        <h2 className="font-semibold mb-4">Event History</h2>
-                        {events.length > 0 ? (
-                            <ul className="space-y-2">
-                                {events.map(event => (
-                                    <li
-                                        key={event.id}
-                                        className="flex justify-between items-center cursor-pointer hover:bg-gray-50 p-2 rounded"
-                                        onClick={() => handleEventClick(event.id)}
+                                <nav className="space-y-2">
+                                    <div className="bg-orange-50 border-l-4 border-orange-500 px-4 py-3 rounded-r-md">
+                                        <div className="flex items-center">
+                                            <svg className="w-5 h-5 text-orange-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                            </svg>
+                                            <span className="text-orange-700 font-medium">Profile</span>
+                                        </div>
+                                    </div>
+
+                                    <Link to="/interested-events" className="flex items-center px-4 py-3 text-gray-700 rounded-md hover:bg-gray-50 transition-colors duration-200">
+                                        <svg className="w-5 h-5 text-gray-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                        My Events
+                                    </Link>
+
+                                    <Link to="/discovery" className="flex items-center px-4 py-3 text-gray-700 rounded-md hover:bg-gray-50 transition-colors duration-200">
+                                        <svg className="w-5 h-5 text-gray-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                        </svg>
+                                        Discover Events
+                                    </Link>
+
+                                    <Link to="/settings" className="flex items-center px-4 py-3 text-gray-700 rounded-md hover:bg-gray-50 transition-colors duration-200">
+                                        <svg className="w-5 h-5 text-gray-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        </svg>
+                                        Settings
+                                    </Link>
+
+                                    <Link to="/notifications" className="flex items-center px-4 py-3 text-gray-700 rounded-md hover:bg-gray-50 transition-colors duration-200">
+                                        <svg className="w-5 h-5 text-gray-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5v-5zM4 16h7v5l-7-5zm0-8h14v3H4V8zm0-4h14v3H4V4z" />
+                                        </svg>
+                                        Notifications
+                                    </Link>
+
+                                    <button className="flex items-center w-full px-4 py-3 text-gray-700 rounded-md hover:bg-gray-50 transition-colors duration-200">
+                                        <svg className="w-5 h-5 text-gray-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        Help & Support
+                                    </button>
+
+                                    <button
+                                        onClick={handleLogout}
+                                        className="flex items-center w-full px-4 py-3 text-red-600 rounded-md hover:bg-red-50 transition-colors duration-200"
                                     >
-                                        <span>{event.title}</span>
-                                        <span className={`
-                                            text-white text-xs px-2 py-1 rounded
-                                            ${event.rsvpStatus === 'attending' ? 'bg-green-500' :
-                                                event.rsvpStatus === 'interested' ? 'bg-blue-500' : 'bg-orange-400'}
-                                        `}>
-                                            {event.rsvpStatus === 'attending' ? 'Attending' :
-                                                event.rsvpStatus === 'interested' ? 'Interested' : 'Not Attending'}
-                                        </span>
-                                    </li>
-                                ))}
-                            </ul>
-                        ) : (
-                            <p className="text-gray-500">You haven't RSVP'd to any events yet.</p>
-                        )}
+                                        <svg className="w-5 h-5 text-red-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                        </svg>
+                                        Log Out
+                                    </button>
+                                </nav>
+                            </div>
+                        </div>
+
+                        {/* Main Content */}
+                        <div className="lg:col-span-3">
+                            <div className="space-y-6">
+                                {/* Header */}
+                                <div className="bg-white rounded-lg shadow-sm p-6">
+                                    <h1 className="text-2xl font-bold text-gray-900 mb-2">Profile Overview</h1>
+                                    <p className="text-gray-600">Manage your account information and preferences</p>
+                                </div>
+
+                                {/* Error Message */}
+                                {error && (
+                                    <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                                        <div className="flex">
+                                            <svg className="w-5 h-5 text-red-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                            {error}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Profile Information */}
+                                <div className="bg-white rounded-lg shadow-sm p-6">
+                                    <div className="flex items-start justify-between mb-6">
+                                        <h2 className="text-lg font-semibold text-gray-900">Personal Information</h2>
+                                        {!isEditing && (
+                                            <button
+                                                onClick={() => setIsEditing(true)}
+                                                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+                                            >
+                                                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                </svg>
+                                                Edit Profile
+                                            </button>
+                                        )}
+                                    </div>
+
+                                    {isEditing ? (
+                                        <form onSubmit={handleSubmit} className="space-y-6">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+                                                    <input
+                                                        type="text"
+                                                        name="firstName"
+                                                        value={formData.firstName}
+                                                        onChange={handleInputChange}
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                                                        placeholder="Enter your first name"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+                                                    <input
+                                                        type="text"
+                                                        name="lastName"
+                                                        value={formData.lastName}
+                                                        onChange={handleInputChange}
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                                                        placeholder="Enter your last name"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">Major</label>
+                                                    <input
+                                                        type="text"
+                                                        name="major"
+                                                        value={formData.major}
+                                                        onChange={handleInputChange}
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                                                        placeholder="Your major/field of study"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">Year of Study</label>
+                                                    <select
+                                                        name="yearOfStudy"
+                                                        value={formData.yearOfStudy}
+                                                        onChange={handleInputChange}
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                                                    >
+                                                        <option value="">Select year</option>
+                                                        <option value="1">1st Year</option>
+                                                        <option value="2">2nd Year</option>
+                                                        <option value="3">3rd Year</option>
+                                                        <option value="4">4th Year</option>
+                                                        <option value="Graduate">Graduate</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-2">Bio</label>
+                                                <textarea
+                                                    name="bio"
+                                                    value={formData.bio}
+                                                    onChange={handleInputChange}
+                                                    rows={4}
+                                                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                                                    placeholder="Tell us about yourself..."
+                                                />
+                                            </div>
+
+                                            <div className="flex justify-end space-x-3">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setIsEditing(false)}
+                                                    className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+                                                >
+                                                    Cancel
+                                                </button>
+                                                <button
+                                                    type="submit"
+                                                    className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+                                                >
+                                                    Save Changes
+                                                </button>
+                                            </div>
+                                        </form>
+                                    ) : (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div>
+                                                <div className="space-y-4">
+                                                    <div>
+                                                        <dt className="text-sm font-medium text-gray-500">Full Name</dt>
+                                                        <dd className="mt-1 text-sm text-gray-900">{profile?.firstName} {profile?.lastName}</dd>
+                                                    </div>
+                                                    <div>
+                                                        <dt className="text-sm font-medium text-gray-500">Email</dt>
+                                                        <dd className="mt-1 text-sm text-gray-900">{user?.email}</dd>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div className="space-y-4">
+                                                    <div>
+                                                        <dt className="text-sm font-medium text-gray-500">Major</dt>
+                                                        <dd className="mt-1 text-sm text-gray-900">{profile?.major || 'Not specified'}</dd>
+                                                    </div>
+                                                    <div>
+                                                        <dt className="text-sm font-medium text-gray-500">Year of Study</dt>
+                                                        <dd className="mt-1 text-sm text-gray-900">{profile?.yearOfStudy ? `${profile.yearOfStudy} Year` : 'Not specified'}</dd>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {profile?.bio && (
+                                                <div className="md:col-span-2">
+                                                    <dt className="text-sm font-medium text-gray-500">Bio</dt>
+                                                    <dd className="mt-1 text-sm text-gray-900">{profile.bio}</dd>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Account Settings */}
+                                <div className="bg-white rounded-lg shadow-sm p-6">
+                                    <h2 className="text-lg font-semibold text-gray-900 mb-6">Account Settings</h2>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <Link
+                                            to="/settings"
+                                            className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors duration-200"
+                                        >
+                                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            </svg>
+                                            Settings
+                                        </Link>
+                                        <Link
+                                            to="/notifications"
+                                            className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors duration-200"
+                                        >
+                                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5v-5zM4 16h7v5l-7-5zm0-8h14v3H4V8zm0-4h14v3H4V4z" />
+                                            </svg>
+                                            Notifications
+                                        </Link>
+                                        <button className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors duration-200">
+                                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                            </svg>
+                                            Security
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Event Activity */}
+                                <div className="bg-white rounded-lg shadow-sm p-6">
+                                    <h2 className="text-lg font-semibold text-gray-900 mb-6">Event Activity</h2>
+                                    {events.length > 0 ? (
+                                        <div className="space-y-4">
+                                            {events.map(event => (
+                                                <div
+                                                    key={event.id}
+                                                    onClick={() => handleEventClick(event.id)}
+                                                    className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-gray-300 cursor-pointer transition-colors duration-200"
+                                                >
+                                                    <div className="flex items-center space-x-4">
+                                                        <div className="flex-shrink-0">
+                                                            <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                                                                <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                                </svg>
+                                                            </div>
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-sm font-medium text-gray-900">{event.title}</p>
+                                                            <p className="text-sm text-gray-500">
+                                                                {new Date(event.startDate || event.date).toLocaleDateString('en-US', {
+                                                                    weekday: 'long',
+                                                                    year: 'numeric',
+                                                                    month: 'long',
+                                                                    day: 'numeric'
+                                                                })}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center space-x-2">
+                                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${event.rsvpStatus === 'attending'
+                                                                ? 'bg-green-100 text-green-800'
+                                                                : event.rsvpStatus === 'interested'
+                                                                    ? 'bg-blue-100 text-blue-800'
+                                                                    : 'bg-gray-100 text-gray-800'
+                                                            }`}>
+                                                            {event.rsvpStatus === 'attending' ? 'Attending' :
+                                                                event.rsvpStatus === 'interested' ? 'Interested' : 'Not Attending'}
+                                                        </span>
+                                                        <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                                        </svg>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="text-center py-8">
+                                            <svg className="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                            </svg>
+                                            <p className="text-gray-500">No events found</p>
+                                            <p className="text-sm text-gray-400 mt-1">You haven't RSVP'd to any events yet.</p>
+                                            <Link
+                                                to="/discovery"
+                                                className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700"
+                                            >
+                                                Discover Events
+                                            </Link>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </section>
+                </div>
             </main>
             <Footer />
         </div>
