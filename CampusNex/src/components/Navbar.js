@@ -39,7 +39,7 @@ const Navbar = () => {
 
     return (
         <UINavbar
-            logo={<Link to="/" className="text-primary text-3xl md:text-4xl font-bold">CampusNex</Link>}
+            logo={<Link to="/" className="flex items-center space-x-3 hover:opacity-80 transition-opacity"><img src="/CampusNex LOGO.svg" alt="CampusNex" className="h-8 md:h-10" /><span className="text-blue-800 text-2xl md:text-3xl font-bold">CampusNex</span></Link>}
             menuItems={menuItems}
             rightMenuItems={rightMenuItems}
             currentPath={location.pathname}

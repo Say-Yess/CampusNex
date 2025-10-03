@@ -16,12 +16,9 @@ import CreateEvent from './pages/CreateEvent';
 import AdminPanel from './pages/AdminPanel';
 import InterestedEvents from './pages/InterestedEvents';
 import Notifications from './pages/Notifications';
-import SearchResults from './pages/SearchResults';
 import Settings from './pages/Settings';
 import About from './pages/About';
 import Leaderboard from './pages/Leaderboard';
-import UIDemo from './pages/UIDemo';
-import ComponentsDemo from './pages/ComponentsDemo';
 import NotFound from './pages/NotFound';
 
 function App() {
@@ -90,10 +87,6 @@ function App() {
               <AdminPanel />
             </ProtectedRoute>
           } />
-
-          {/* Demo Routes */}
-          <Route path="/ui-demo" element={<UIDemo />} />
-          <Route path="/components-demo" element={<ComponentsDemo />} />
 
           {/* Redirects for legacy routes */}
           <Route path="/event/:id" element={<Navigate to="/events/:id" replace />} />

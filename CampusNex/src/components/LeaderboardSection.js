@@ -77,9 +77,6 @@ const LeaderboardSection = () => {
 
             // Use fallback data when API is not available
             const fallbackData = type === 'students' ? fallbackStudents : fallbackOrganizers;
-            const startIndex = (page - 1) * limit;
-            const endIndex = startIndex + limit;
-            const paginatedData = fallbackData.slice(startIndex, endIndex);
 
             setLeaderboardData(fallbackData); // Show all data for demo
             setPagination({

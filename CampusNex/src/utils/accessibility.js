@@ -190,9 +190,11 @@ export const useKeyboardNavigation = ({
     };
 };
 
-export default {
+const accessibilityUtils = {
     useFocusTrap,
     withAccessibility,
     ScreenReaderOnly,
     useKeyboardNavigation,
 };
+
+export default accessibilityUtils;

@@ -156,9 +156,11 @@ export const AnimateOnScroll = ({
     );
 };
 
-export default {
+const animationUtils = {
     animations,
     useAnimation,
     useScrollAnimation,
     AnimateOnScroll,
 };
+
+export default animationUtils;

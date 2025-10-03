@@ -12,7 +12,7 @@ const InterestedEvents = () => {
     const [error, setError] = useState('');
 
     const navigate = useNavigate();
-    const { user, isAuthenticated } = useAuth();
+    const { isAuthenticated } = useAuth();
 
     useEffect(() => {
         // Redirect to login if not authenticated

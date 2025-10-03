@@ -19,29 +19,7 @@ const Carousel = ({
     const touchEndX = useRef(0);
     const autoPlayTimer = useRef(null);
 
-    // Reset auto-play timer whenever currentIndex changes
-    useEffect(() => {
-        if (autoPlay && items.length > 1) {
-            clearInterval(autoPlayTimer.current);
-            autoPlayTimer.current = setInterval(() => {
-                goToNext();
-            }, interval);
-
-            return () => {
-                clearInterval(autoPlayTimer.current);
-            };
-        }
-    }, [autoPlay, interval, currentIndex, items.length]);
-
-    // Cleanup on unmount
-    useEffect(() => {
-        return () => {
-            if (autoPlayTimer.current) {
-                clearInterval(autoPlayTimer.current);
-            }
-        };
-    }, []);
-
+    // Navigation functions
     const goToPrevious = useCallback(() => {
         if (isAnimating || items.length <= 1) return;
 
@@ -63,6 +41,29 @@ const Carousel = ({
             setIsAnimating(false);
         }, 500); // Match this with the CSS transition duration
     }, [isAnimating, items.length]);
+
+    // Reset auto-play timer whenever currentIndex changes
+    useEffect(() => {
+        if (autoPlay && items.length > 1) {
+            clearInterval(autoPlayTimer.current);
+            autoPlayTimer.current = setInterval(() => {
+                goToNext();
+            }, interval);
+
+            return () => {
+                clearInterval(autoPlayTimer.current);
+            };
+        }
+    }, [autoPlay, interval, currentIndex, items.length, goToNext]);
+
+    // Cleanup on unmount
+    useEffect(() => {
+        return () => {
+            if (autoPlayTimer.current) {
+                clearInterval(autoPlayTimer.current);
+            }
+        };
+    }, []);
 
     const goToSlide = useCallback((index) => {
         if (isAnimating || index === currentIndex) return;
@@ -124,7 +125,7 @@ const Carousel = ({
                     <div
                         key={index}
                         className={`absolute top-0 left-0 w-full h-full transition-all duration-500 ease-in-out ${index === currentIndex ? 'opacity-100 z-10 translate-x-0' :
-                                index < currentIndex ? 'opacity-0 -translate-x-full' : 'opacity-0 translate-x-full'
+                            index < currentIndex ? 'opacity-0 -translate-x-full' : 'opacity-0 translate-x-full'
                             } ${slideClassName}`}
                         aria-hidden={index !== currentIndex}
                         role="group"
@@ -170,8 +171,8 @@ const Carousel = ({
                             key={index}
                             onClick={() => goToSlide(index)}
                             className={`w-3 h-3 rounded-full transition-all ${index === currentIndex
-                                    ? 'bg-primary scale-125'
-                                    : 'bg-white/50 hover:bg-white/80'
+                                ? 'bg-primary scale-125'
+                                : 'bg-white/50 hover:bg-white/80'
                                 } ${dotClassName}`}
                             aria-label={`Go to slide ${index + 1}`}
                             aria-current={index === currentIndex ? 'true' : 'false'}

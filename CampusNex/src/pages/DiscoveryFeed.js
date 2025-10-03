@@ -1,72 +1,15 @@
 // src/pages/DiscoveryFeed.js
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Search, X, Filter } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import EventCard from '../components/EventCard';
-import EventFilters from '../components/EventFilters';
 import RSVPResultPopup from '../components/RSVPResultPopup';
+import JoinConfirmationModal from '../components/JoinConfirmationModal';
 import { eventsAPI } from '../services/api';
 import { useAuth } from '../services/AuthContext';
-
-// Mock data for testing when API is not available
-const mockEvents = [
-    {
-        id: '1',
-        title: 'Tech Conference 2025',
-        description: 'Join us for the biggest tech conference of the year! Learn about the latest trends in AI, machine learning, and web development from industry experts.',
-        category: 'Technology',
-        location: 'San Francisco Convention Center',
-        startDate: new Date('2025-10-15T09:00:00'),
-        endDate: new Date('2025-10-15T17:00:00'),
-        imageUrl: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=2070&auto=format&fit=crop',
-        RSVPs: [{ status: 'attending' }, { status: 'attending' }, { status: 'interested' }]
-    },
-    {
-        id: '2',
-        title: 'Startup Weekend',
-        description: 'A 54-hour weekend event where entrepreneurs, developers, designers, and business people come together to build amazing startups.',
-        category: 'Business',
-        location: 'Innovation Hub',
-        startDate: new Date('2025-10-20T18:00:00'),
-        endDate: new Date('2025-10-22T20:00:00'),
-        imageUrl: 'https://images.unsplash.com/photo-1515187029135-18ee286d815b?q=80&w=2070&auto=format&fit=crop',
-        RSVPs: [{ status: 'attending' }, { status: 'attending' }]
-    },
-    {
-        id: '3',
-        title: 'AI Workshop: Building Chatbots',
-        description: 'Learn how to build intelligent chatbots using modern AI technologies. Perfect for beginners and intermediate developers.',
-        category: 'Technology',
-        location: 'University Tech Lab',
-        startDate: new Date('2025-10-25T14:00:00'),
-        endDate: new Date('2025-10-25T18:00:00'),
-        imageUrl: 'https://images.unsplash.com/photo-1573164713988-8665fc963095?q=80&w=2069&auto=format&fit=crop',
-        RSVPs: [{ status: 'attending' }]
-    },
-    {
-        id: '4',
-        title: 'Digital Marketing Masterclass',
-        description: 'Master the art of digital marketing with hands-on workshops covering SEO, social media, content marketing, and analytics.',
-        category: 'Marketing',
-        location: 'Business Center Downtown',
-        startDate: new Date('2025-11-01T10:00:00'),
-        endDate: new Date('2025-11-01T16:00:00'),
-        imageUrl: 'https://images.unsplash.com/photo-1611224923853-80b023f02d71?q=80&w=2070&auto=format&fit=crop',
-        RSVPs: [{ status: 'attending' }, { status: 'attending' }, { status: 'attending' }, { status: 'interested' }]
-    },
-    {
-        id: '5',
-        title: 'Career Fair 2025',
-        description: 'Connect with top employers and discover amazing career opportunities across various industries. Bring your resume!',
-        category: 'Career',
-        location: 'Campus Main Hall',
-        startDate: new Date('2025-11-05T09:00:00'),
-        endDate: new Date('2025-11-05T15:00:00'),
-        imageUrl: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=2070&auto=format&fit=crop',
-        RSVPs: [{ status: 'attending' }, { status: 'attending' }, { status: 'attending' }]
-    }
-];
+import { mockEvents } from '../data/mockEvents';
 
 const DiscoveryFeed = () => {
     const [events, setEvents] = useState([]);
@@ -76,12 +19,18 @@ const DiscoveryFeed = () => {
         category: 'All',
         location: 'All',
         date: 'All',
+        search: '',
     });
     const [currentIndex, setCurrentIndex] = useState(0);
     const [showRsvpResult, setShowRsvpResult] = useState(false);
     const [rsvpResult, setRsvpResult] = useState({ success: false, message: '' });
     const [isAnimating, setIsAnimating] = useState(false);
     const [swipeDirection, setSwipeDirection] = useState('');
+    const [showJoinConfirmation, setShowJoinConfirmation] = useState(false);
+    const [selectedEventForJoin, setSelectedEventForJoin] = useState(null);
+    const [showFilters, setShowFilters] = useState(false);
+    const [categories, setCategories] = useState(['All']);
+    const [locations, setLocations] = useState(['All']);
 
     const navigate = useNavigate();
     const { isAuthenticated } = useAuth();
@@ -94,6 +43,14 @@ const DiscoveryFeed = () => {
                 console.log('Attempting to fetch events from API...');
                 const response = await eventsAPI.getAllEvents();
                 setEvents(response.events);
+
+                // Extract unique categories and locations for filters
+                const uniqueCategories = ['All', ...new Set(response.events.map(event => event.category))];
+                setCategories(uniqueCategories.filter(Boolean));
+
+                const uniqueLocations = ['All', ...new Set(response.events.map(event => event.location))];
+                setLocations(uniqueLocations.filter(Boolean));
+
                 setError('');
                 console.log('Successfully loaded events from API:', response.events.length);
             } catch (err) {
@@ -101,6 +58,11 @@ const DiscoveryFeed = () => {
                 console.log('Using mock data instead...');
                 // Use mock data when API fails
                 setEvents(mockEvents);
+
+                // Set default campus categories and locations
+                setCategories(['All', 'Academic', 'Sports', 'Cultural', 'Social', 'Career', 'Workshop']);
+                setLocations(['All', 'Main Campus', 'Library', 'Auditorium', 'Sports Complex', 'Student Center']);
+
                 setError(''); // Clear error since we have mock data
             } finally {
                 setLoading(false);
@@ -110,20 +72,30 @@ const DiscoveryFeed = () => {
         fetchEvents();
     }, []);
 
-    // Handle RSVP to an event
-    const handleRSVP = async (eventId, status) => {
+    // Handle Join Now button click - show confirmation popup first
+    const handleJoinClick = (eventId) => {
         if (!isAuthenticated) {
             navigate('/login', { state: { from: '/discovery' } });
             return;
         }
+
+        const event = events.find(e => e.id === eventId);
+        setSelectedEventForJoin(event);
+        setShowJoinConfirmation(true);
+    };
+
+    // Handle confirmed RSVP from confirmation popup
+    const handleConfirmedRSVP = async (eventId, status) => {
+        setShowJoinConfirmation(false);
 
         try {
             await eventsAPI.rsvpToEvent(eventId, status);
             setRsvpResult({
                 success: true,
                 message: status === 'attending'
-                    ? 'You are now attending this event!'
-                    : 'You\'ve marked interest in this event!'
+                    ? 'RSVP Confirmed! We\'re Excited To See You There.'
+                    : 'Thank For Letting Us Know We\'ll Miss You',
+                type: status
             });
             setShowRsvpResult(true);
         } catch (err) {
@@ -132,8 +104,9 @@ const DiscoveryFeed = () => {
             setRsvpResult({
                 success: true,
                 message: status === 'attending'
-                    ? 'You are now attending this event! (Demo mode)'
-                    : 'You\'ve marked interest in this event! (Demo mode)'
+                    ? 'RSVP Confirmed! We\'re Excited To See You There. (Demo mode)'
+                    : 'Thank For Letting Us Know We\'ll Miss You (Demo mode)',
+                type: status
             });
             setShowRsvpResult(true);
         }
@@ -203,6 +176,23 @@ const DiscoveryFeed = () => {
         const categoryMatch = filters.category === 'All' || event.category === filters.category;
         const locationMatch = filters.location === 'All' || event.location === filters.location;
 
+        // Text search across multiple fields
+        let searchMatch = true;
+        if (filters.search && filters.search.trim() !== '') {
+            const searchTerm = filters.search.toLowerCase().trim();
+            const eventName = event.title?.toLowerCase() || '';
+            const eventDescription = event.description?.toLowerCase() || '';
+            const eventOrganizer = event.organizer?.toLowerCase() || '';
+            const eventLocation = event.location?.toLowerCase() || '';
+            const eventCategory = event.category?.toLowerCase() || '';
+
+            searchMatch = eventName.includes(searchTerm) ||
+                eventDescription.includes(searchTerm) ||
+                eventOrganizer.includes(searchTerm) ||
+                eventLocation.includes(searchTerm) ||
+                eventCategory.includes(searchTerm);
+        }
+
         let dateMatch = true;
         if (filters.date !== 'All') {
             const eventDate = new Date(event.startDate);
@@ -223,7 +213,7 @@ const DiscoveryFeed = () => {
             }
         }
 
-        return categoryMatch && locationMatch && dateMatch;
+        return categoryMatch && locationMatch && dateMatch && searchMatch;
     });
 
     if (loading) {
@@ -275,7 +265,162 @@ const DiscoveryFeed = () => {
                         </div>
                     )}
 
-                    <EventFilters filters={filters} setFilters={setFilters} />
+                    {/* Enhanced Search and Filters */}
+                    <div className="mb-6">
+                        {/* Search Bar */}
+                        <div className="relative max-w-lg mx-auto mb-4">
+                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                            <input
+                                type="text"
+                                placeholder="Search events by name, description, organizer..."
+                                value={filters.search || ''}
+                                onChange={e => setFilters({ ...filters, search: e.target.value })}
+                                className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
+                                disabled={loading}
+                            />
+                            {filters.search && (
+                                <button
+                                    onClick={() => setFilters({ ...filters, search: '' })}
+                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                    disabled={loading}
+                                >
+                                    <X size={20} />
+                                </button>
+                            )}
+                        </div>
+
+                        {/* Filter Toggle Button */}
+                        <div className="text-center mb-4">
+                            <button
+                                onClick={() => setShowFilters(!showFilters)}
+                                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg transition-all duration-300 border border-blue-200"
+                            >
+                                <Filter size={18} />
+                                <span>{showFilters ? 'Hide Filters' : 'Show Filters'}</span>
+                            </button>
+                        </div>
+
+                        {/* Filter Dropdowns - Collapsible */}
+                        {showFilters && (
+                            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                                <div className="flex flex-wrap gap-4 justify-center items-center">
+                                    {/* Category Filter */}
+                                    <div className="flex flex-col">
+                                        <label className="text-sm font-medium text-gray-700 mb-1">Category</label>
+                                        <select
+                                            className="px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[140px]"
+                                            value={filters.category}
+                                            onChange={e => setFilters({ ...filters, category: e.target.value })}
+                                            disabled={loading}
+                                        >
+                                            {categories.map(cat => (
+                                                <option key={cat} value={cat}>{cat}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    {/* Location Filter */}
+                                    <div className="flex flex-col">
+                                        <label className="text-sm font-medium text-gray-700 mb-1">Location</label>
+                                        <select
+                                            className="px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[140px]"
+                                            value={filters.location}
+                                            onChange={e => setFilters({ ...filters, location: e.target.value })}
+                                            disabled={loading}
+                                        >
+                                            {locations.map(location => (
+                                                <option key={location} value={location}>{location}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    {/* Date Filter */}
+                                    <div className="flex flex-col">
+                                        <label className="text-sm font-medium text-gray-700 mb-1">Date</label>
+                                        <select
+                                            className="px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[140px]"
+                                            value={filters.date}
+                                            onChange={e => setFilters({ ...filters, date: e.target.value })}
+                                            disabled={loading}
+                                        >
+                                            {['All', 'Today', 'This Week', 'This Month'].map(date => (
+                                                <option key={date} value={date}>{date}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    {/* Clear Filters Button */}
+                                    <div className="flex flex-col justify-end">
+                                        <button
+                                            onClick={() => setFilters({
+                                                category: 'All',
+                                                location: 'All',
+                                                date: 'All',
+                                                search: ''
+                                            })}
+                                            className="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-700 rounded-lg transition-all duration-300 border border-red-200 whitespace-nowrap"
+                                            disabled={loading}
+                                        >
+                                            Clear All
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Active Filters Display */}
+                                {(filters.category !== 'All' || filters.location !== 'All' || filters.date !== 'All' || filters.search) && (
+                                    <div className="mt-4 pt-4 border-t border-gray-200">
+                                        <div className="text-sm text-gray-600 mb-2">Active filters:</div>
+                                        <div className="flex flex-wrap gap-2">
+                                            {filters.search && (
+                                                <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+                                                    Search: "{filters.search}"
+                                                    <button
+                                                        onClick={() => setFilters({ ...filters, search: '' })}
+                                                        className="hover:text-blue-900"
+                                                    >
+                                                        <X size={14} />
+                                                    </button>
+                                                </span>
+                                            )}
+                                            {filters.category !== 'All' && (
+                                                <span className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+                                                    Category: {filters.category}
+                                                    <button
+                                                        onClick={() => setFilters({ ...filters, category: 'All' })}
+                                                        className="hover:text-green-900"
+                                                    >
+                                                        <X size={14} />
+                                                    </button>
+                                                </span>
+                                            )}
+                                            {filters.location !== 'All' && (
+                                                <span className="inline-flex items-center gap-1 px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">
+                                                    Location: {filters.location}
+                                                    <button
+                                                        onClick={() => setFilters({ ...filters, location: 'All' })}
+                                                        className="hover:text-purple-900"
+                                                    >
+                                                        <X size={14} />
+                                                    </button>
+                                                </span>
+                                            )}
+                                            {filters.date !== 'All' && (
+                                                <span className="inline-flex items-center gap-1 px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm">
+                                                    Date: {filters.date}
+                                                    <button
+                                                        onClick={() => setFilters({ ...filters, date: 'All' })}
+                                                        className="hover:text-orange-900"
+                                                    >
+                                                        <X size={14} />
+                                                    </button>
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
 
                     {filteredEvents.length > 0 ? (
                         <div className="relative max-w-xl mx-auto mt-10">
@@ -285,8 +430,8 @@ const DiscoveryFeed = () => {
                                     onClick={prevEvent}
                                     disabled={currentIndex === 0 || isAnimating}
                                     className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 shadow-lg ${currentIndex > 0 && !isAnimating
-                                            ? 'bg-white hover:bg-blue-50 text-blue-600 hover:scale-110 cursor-pointer'
-                                            : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                        ? 'bg-white hover:bg-blue-50 text-blue-600 hover:scale-110 cursor-pointer'
+                                        : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                                         }`}
                                 >
                                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -300,8 +445,8 @@ const DiscoveryFeed = () => {
                                     onClick={nextEvent}
                                     disabled={currentIndex === filteredEvents.length - 1 || isAnimating}
                                     className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 shadow-lg ${currentIndex < filteredEvents.length - 1 && !isAnimating
-                                            ? 'bg-white hover:bg-blue-50 text-blue-600 hover:scale-110 cursor-pointer'
-                                            : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                        ? 'bg-white hover:bg-blue-50 text-blue-600 hover:scale-110 cursor-pointer'
+                                        : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                                         }`}
                                 >
                                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -382,7 +527,7 @@ const DiscoveryFeed = () => {
                                                 description={event.description?.substring(0, 150) + (event.description?.length > 150 ? '...' : '')}
                                                 registered={event.RSVPs?.filter(r => r.status === 'attending').length || 0}
                                                 image={event.imageUrl}
-                                                onJoin={() => handleRSVP(event.id, 'attending')}
+                                                onJoin={() => handleJoinClick(event.id)}
                                                 isAuthenticated={isAuthenticated}
                                             />
                                         </div>
@@ -405,6 +550,15 @@ const DiscoveryFeed = () => {
                     <RSVPResultPopup
                         result={rsvpResult}
                         onClose={handleCloseRsvpResult}
+                    />
+                )}
+
+                {showJoinConfirmation && (
+                    <JoinConfirmationModal
+                        isOpen={showJoinConfirmation}
+                        onClose={() => setShowJoinConfirmation(false)}
+                        event={selectedEventForJoin}
+                        onConfirm={handleConfirmedRSVP}
                     />
                 )}
             </main>

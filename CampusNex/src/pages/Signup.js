@@ -11,6 +11,9 @@ const Signup = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    const [userType, setUserType] = useState('student'); // 'student' or 'organizer'
+    const [organization, setOrganization] = useState('');
+    const [position, setPosition] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
@@ -32,19 +35,22 @@ const Signup = () => {
                 password,
                 firstName,
                 lastName,
-                role: 'student' // Default to student
+                role: userType,
+                organization: userType === 'organizer' ? organization : '',
+                position: userType === 'organizer' ? position : ''
             });
-            navigate('/discovery');
+
+            // Redirect based on user type
+            if (userType === 'organizer') {
+                navigate('/organizer-dashboard');
+            } else {
+                navigate('/discovery');
+            }
         } catch (err) {
             setError(err.message || 'Failed to create account. Please try again.');
         } finally {
             setLoading(false);
         }
-    };
-
-    const handleGoogleSignup = async () => {
-        setError('Not implemented in the new API yet. Please use email signup.');
-        // Future implementation will use OAuth with the backend
     };
 
     const handleSocialLogin = (provider) => {
@@ -92,8 +98,8 @@ const Signup = () => {
                     <div className="bg-white rounded-2xl shadow-2xl p-8 border border-gray-100 hover:shadow-3xl transition-shadow duration-300">
                         {/* Header */}
                         <div className="text-center mb-8">
-                            <h2 className="text-3xl font-bold text-gray-900 mb-2">Create Account</h2>
-                            <p className="text-gray-600">Join us and start your journey</p>
+                            <h2 className="text-3xl font-bold text-gray-900 mb-2">Join CampusNex</h2>
+                            <p className="text-gray-600">Connect with your campus community</p>
                         </div>
 
                         {/* Social Login Buttons */}
@@ -205,6 +211,75 @@ const Signup = () => {
                                 </div>
                                 <p className="text-xs text-gray-500 mt-1">Password must be at least 6 characters long</p>
                             </div>
+
+                            {/* User Type Selection */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-3">
+                                    I am signing up as:
+                                </label>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => setUserType('student')}
+                                        className={`p-3 rounded-lg border text-center transition-all duration-300 ${userType === 'student'
+                                                ? 'border-blue-500 bg-blue-50 text-blue-700'
+                                                : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
+                                            }`}
+                                        disabled={loading}
+                                    >
+                                        <div className="font-medium">Student</div>
+                                        <div className="text-xs opacity-75">Attend events</div>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setUserType('organizer')}
+                                        className={`p-3 rounded-lg border text-center transition-all duration-300 ${userType === 'organizer'
+                                                ? 'border-blue-500 bg-blue-50 text-blue-700'
+                                                : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
+                                            }`}
+                                        disabled={loading}
+                                    >
+                                        <div className="font-medium">Event Organizer</div>
+                                        <div className="text-xs opacity-75">Create & manage events</div>
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Organizer-specific fields */}
+                            {userType === 'organizer' && (
+                                <>
+                                    <div>
+                                        <label htmlFor="organization" className="block text-sm font-medium text-gray-700 mb-2">
+                                            Organization/Club Name
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="organization"
+                                            value={organization}
+                                            onChange={(e) => setOrganization(e.target.value)}
+                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
+                                            placeholder="e.g., Computer Science Club, Student Council"
+                                            required={userType === 'organizer'}
+                                            disabled={loading}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label htmlFor="position" className="block text-sm font-medium text-gray-700 mb-2">
+                                            Position/Role
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="position"
+                                            value={position}
+                                            onChange={(e) => setPosition(e.target.value)}
+                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
+                                            placeholder="e.g., President, Vice President, Faculty Advisor"
+                                            required={userType === 'organizer'}
+                                            disabled={loading}
+                                        />
+                                    </div>
+                                </>
+                            )}
 
                             {/* Error Message */}
                             {error && (

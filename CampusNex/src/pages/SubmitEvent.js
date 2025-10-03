@@ -4,42 +4,6 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { useState } from 'react';
 
-const features = [
-    {
-        title: 'Reach 1000s of Students',
-        description: 'Connect with engaged students across multiple campuses',
-        icon: (
-            <div className="flex items-center justify-center mb-6">
-                <div className="w-12 h-12 rounded-full border-4 border-orange-400 flex items-center justify-center">
-                    <div className="w-10 h-10 bg-transparent"></div>
-                </div>
-            </div>
-        ),
-    },
-    {
-        title: 'Track RSVPs Easily',
-        description: 'Real-time analytics and attendee management',
-        icon: (
-            <div className="flex items-center justify-center mb-6">
-                <div className="w-12 h-12 rounded-full border-4 border-orange-400 flex items-center justify-center">
-                    <div className="w-10 h-10 bg-transparent"></div>
-                </div>
-            </div>
-        ),
-    },
-    {
-        title: 'Promote Scholarships',
-        description: 'Help students find funding opportunities',
-        icon: (
-            <div className="flex items-center justify-center mb-6">
-                <div className="w-12 h-12 rounded-full border-4 border-orange-400 flex items-center justify-center">
-                    <div className="w-10 h-10 bg-transparent"></div>
-                </div>
-            </div>
-        ),
-    },
-];
-
 const SubmitEvent = () => {
     const [showForm, setShowForm] = useState(true);
 
@@ -89,7 +53,7 @@ const SubmitEvent = () => {
                             </div>
                             <div className="flex items-center gap-2">
                                 <input type="checkbox" required className="form-checkbox h-5 w-5 text-blue-600" />
-                                <span>I Agree To The <a href="#" className="text-blue-600 underline">Posting Guidelines</a> And Terms Of Service</span>
+                                <span>I Agree To The <button type="button" className="text-blue-600 underline bg-transparent border-none p-0 cursor-pointer">Posting Guidelines</button> And Terms Of Service</span>
                             </div>
                             <div className="flex gap-4 mt-6">
                                 <button type="button" className="bg-gray-200 text-gray-700 px-6 py-2 rounded font-semibold flex-1">Back</button>

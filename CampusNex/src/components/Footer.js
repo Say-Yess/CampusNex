@@ -16,16 +16,16 @@ const Footer = () => {
             ]
         },
         {
-            title: 'Categories',
+            title: 'Campus Events',
             links: [
-                { label: 'Concerts & Gigs', href: '/discovery?category=concerts' },
-                { label: 'Festivals & Lifestyle', href: '/discovery?category=festivals' },
-                { label: 'Business & Networking', href: '/discovery?category=business' },
-                { label: 'Food & Drinks', href: '/discovery?category=food' },
-                { label: 'Performing Arts', href: '/discovery?category=arts' },
-                { label: 'Sports & Outdoors', href: '/discovery?category=sports' },
-                { label: 'Exhibitions', href: '/discovery?category=exhibitions' },
-                { label: 'Workshops & Conferences', href: '/discovery?category=workshops' },
+                { label: 'Academic Conferences', href: '/discovery?category=academic' },
+                { label: 'Student Activities', href: '/discovery?category=student-activities' },
+                { label: 'Sports & Recreation', href: '/discovery?category=sports' },
+                { label: 'Cultural Events', href: '/discovery?category=cultural' },
+                { label: 'Career & Networking', href: '/discovery?category=career' },
+                { label: 'Workshops & Seminars', href: '/discovery?category=workshops' },
+                { label: 'Campus Festivals', href: '/discovery?category=festivals' },
+                { label: 'Club Events', href: '/discovery?category=clubs' },
             ]
         },
         {
@@ -33,8 +33,7 @@ const Footer = () => {
             links: [
                 { label: 'Account Support', href: '/support' },
                 { label: 'Listing Events', href: '/list-event' },
-                { label: 'Event Ticketing', href: '/ticketing' },
-                { label: 'Purchase Terms & Conditions', href: '/purchase-terms' },
+                { label: 'Terms & Conditions', href: '/purchase-terms' },
             ]
         }
     ];

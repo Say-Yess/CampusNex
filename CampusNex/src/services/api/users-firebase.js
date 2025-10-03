@@ -12,7 +12,6 @@ import {
     updateDoc
 } from 'firebase/firestore';
 import { updateProfile } from 'firebase/auth';
-import apiClient from './client-firebase';
 
 // Collection name
 const COLLECTION = 'users';
@@ -207,7 +206,7 @@ export const getUsersByEvent = async (eventId, status = 'attending') => {
     }
 };
 
-export default {
+const usersAPI = {
     getCurrentUserProfile,
     getUserProfile,
     updateUserProfile,
@@ -215,3 +214,5 @@ export default {
     searchUsers,
     getUsersByEvent
 };
+
+export default usersAPI;

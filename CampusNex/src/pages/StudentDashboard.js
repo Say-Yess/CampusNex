@@ -1,9 +1,76 @@
 // src/pages/StudentDashboard.js
 
+import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import { eventsAPI } from '../services/api';
 
 const StudentDashboard = () => {
+    const [events, setEvents] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [stats, setStats] = useState({
+        eventsToAttend: 0,
+        activeEvent: null,
+        nextEvent: null
+    });
+
+    useEffect(() => {
+        fetchEvents();
+    }, []);
+
+    const fetchEvents = async () => {
+        try {
+            setLoading(true);
+            const response = await eventsAPI.getAllEvents();
+            const eventsData = response.events || [];
+            setEvents(eventsData);
+
+            // Calculate stats from real data
+            const upcomingEvents = eventsData.filter(event =>
+                new Date(event.date || event.startDate) > new Date()
+            ).sort((a, b) =>
+                new Date(a.date || a.startDate) - new Date(b.date || b.startDate)
+            );
+
+            setStats({
+                eventsToAttend: upcomingEvents.length,
+                activeEvent: upcomingEvents[0] || null,
+                nextEvent: upcomingEvents[1] || null
+            });
+        } catch (error) {
+            console.error('Error fetching events:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const formatEventDate = (dateStr) => {
+        if (!dateStr) return 'Date TBD';
+        const date = new Date(dateStr);
+        return date.toLocaleDateString('en-US', {
+            weekday: 'long',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    };
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex flex-col">
+                <Navbar />
+                <main className="flex-1 py-8 flex items-center justify-center">
+                    <div className="text-center">
+                        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+                        <p className="mt-4 text-gray-600">Loading your dashboard...</p>
+                    </div>
+                </main>
+                <Footer />
+            </div>
+        );
+    }
+
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col">
             <Navbar />
@@ -102,7 +169,7 @@ const StudentDashboard = () => {
                                             </div>
                                             <div className="ml-4">
                                                 <p className="text-sm font-medium text-gray-500">Events to Attend</p>
-                                                <p className="text-2xl font-semibold text-gray-900">3</p>
+                                                <p className="text-2xl font-semibold text-gray-900">{stats.eventsToAttend}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -118,7 +185,9 @@ const StudentDashboard = () => {
                                             </div>
                                             <div className="ml-4">
                                                 <p className="text-sm font-medium text-gray-500">Active Event</p>
-                                                <p className="text-lg font-semibold text-gray-900">Tech Workshop</p>
+                                                <p className="text-lg font-semibold text-gray-900">
+                                                    {stats.activeEvent ? stats.activeEvent.title : 'No active events'}
+                                                </p>
                                             </div>
                                         </div>
                                     </div>
@@ -134,7 +203,9 @@ const StudentDashboard = () => {
                                             </div>
                                             <div className="ml-4">
                                                 <p className="text-sm font-medium text-gray-500">Next Event</p>
-                                                <p className="text-lg font-semibold text-gray-900">Career Fair</p>
+                                                <p className="text-lg font-semibold text-gray-900">
+                                                    {stats.nextEvent ? stats.nextEvent.title : 'No upcoming events'}
+                                                </p>
                                             </div>
                                         </div>
                                     </div>
@@ -152,62 +223,49 @@ const StudentDashboard = () => {
                                         </div>
 
                                         <div className="space-y-4">
-                                            <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                                                <div className="flex items-center space-x-4">
-                                                    <div className="flex-shrink-0">
-                                                        <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                                                            <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                                            </svg>
-                                                        </div>
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-sm font-medium text-gray-900">Tech Workshop</p>
-                                                        <p className="text-sm text-gray-500">Today, 2:00 PM - 4:00 PM</p>
-                                                    </div>
+                                            {events.length === 0 ? (
+                                                <div className="text-center py-8">
+                                                    <svg className="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                    </svg>
+                                                    <p className="text-gray-500">No events scheduled yet</p>
                                                 </div>
-                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                    Attending
-                                                </span>
-                                            </div>
-
-                                            <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                                                <div className="flex items-center space-x-4">
-                                                    <div className="flex-shrink-0">
-                                                        <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
-                                                            <svg className="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m8 0H8m8 0v2l-4 4-4-4V6" />
-                                                            </svg>
+                                            ) : (
+                                                events.slice(0, 3).map((event, index) => (
+                                                    <div key={event.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                                                        <div className="flex items-center space-x-4">
+                                                            <div className="flex-shrink-0">
+                                                                <div className={`w-10 h-10 ${event.category === 'Technology' ? 'bg-blue-100' :
+                                                                        event.category === 'Career' ? 'bg-orange-100' :
+                                                                            event.category === 'Workshop' ? 'bg-purple-100' :
+                                                                                event.category === 'Business' ? 'bg-green-100' :
+                                                                                    'bg-gray-100'
+                                                                    } rounded-lg flex items-center justify-center`}>
+                                                                    <svg className={`w-5 h-5 ${event.category === 'Technology' ? 'text-blue-600' :
+                                                                            event.category === 'Career' ? 'text-orange-600' :
+                                                                                event.category === 'Workshop' ? 'text-purple-600' :
+                                                                                    event.category === 'Business' ? 'text-green-600' :
+                                                                                        'text-gray-600'
+                                                                        }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                                    </svg>
+                                                                </div>
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-sm font-medium text-gray-900">{event.title}</p>
+                                                                <p className="text-sm text-gray-500">{formatEventDate(event.date || event.startDate)}</p>
+                                                                <p className="text-xs text-gray-400">{event.location}</p>
+                                                            </div>
                                                         </div>
+                                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${index === 0 ? 'bg-green-100 text-green-800' :
+                                                                index === 1 ? 'bg-blue-100 text-blue-800' :
+                                                                    'bg-yellow-100 text-yellow-800'
+                                                            }`}>
+                                                            {index === 0 ? 'Attending' : index === 1 ? 'Interested' : 'Available'}
+                                                        </span>
                                                     </div>
-                                                    <div>
-                                                        <p className="text-sm font-medium text-gray-900">Career Fair</p>
-                                                        <p className="text-sm text-gray-500">Tomorrow, 9:00 AM - 3:00 PM</p>
-                                                    </div>
-                                                </div>
-                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                                    Interested
-                                                </span>
-                                            </div>
-
-                                            <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                                                <div className="flex items-center space-x-4">
-                                                    <div className="flex-shrink-0">
-                                                        <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                                                            <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-                                                            </svg>
-                                                        </div>
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-sm font-medium text-gray-900">Study Group Meeting</p>
-                                                        <p className="text-sm text-gray-500">Friday, 7:00 PM - 9:00 PM</p>
-                                                    </div>
-                                                </div>
-                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                    Attending
-                                                </span>
-                                            </div>
+                                                ))
+                                            )}
                                         </div>
                                     </div>
 
