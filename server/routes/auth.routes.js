@@ -217,7 +217,10 @@ router.get('/google/callback', (req, res, next) => {
         return res.redirect(`${frontendURL}/login?error=oauth_not_configured`);
     }
 
-    passport.authenticate('google', { session: false })(req, res, next);
+    passport.authenticate('google', { 
+        session: false,
+        failureRedirect: '/api/auth/google/failure'
+    })(req, res, next);
 }, async (req, res) => {
     try {
         let user = req.user;
@@ -260,6 +263,21 @@ router.get('/google/callback', (req, res, next) => {
     }
 }
 );
+
+// @route   GET /api/auth/google/failure
+// @desc    Google OAuth failure handler
+// @access  Public
+router.get('/google/failure', (req, res) => {
+    console.error('Google OAuth authentication failed');
+    res.status(500).json({
+        success: false,
+        message: "Google OAuth Authentication Failed",
+        error: "Authentication failed at Google OAuth level",
+        timestamp: new Date().toISOString(),
+        query: req.query,
+        session: req.session
+    });
+});
 
 // @route   POST /api/auth/google/token
 // @desc    Authenticate with Google ID token (for Firebase integration)
