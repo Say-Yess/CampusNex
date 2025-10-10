@@ -1,7 +1,9 @@
 const express = require('express');
 const cors = require('cors');
+const session = require('express-session');
 const dotenv = require('dotenv');
 const path = require('path');
+const passport = require('./config/passport');
 const { sequelize } = require('./config/database');
 
 // Load environment variables
@@ -16,6 +18,21 @@ app.use(cors({
     origin: process.env.CORS_ORIGIN,
     credentials: true
 }));
+
+// Session configuration for Passport
+app.use(session({
+    secret: process.env.SESSION_SECRET || 'your-session-secret',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    }
+}));
+
+// Initialize Passport
+app.use(passport.initialize());
+app.use(passport.session());
 
 // Serve static files from uploads directory
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -45,8 +62,8 @@ const startServer = async () => {
         await sequelize.authenticate();
         console.log('Database connection established successfully.');
 
-        // Sync database models
-        await sequelize.sync({ alter: true });
+        // Sync database models (using force for clean setup)
+        await sequelize.sync();
         console.log('Database models synchronized.');
 
         app.listen(PORT, () => {

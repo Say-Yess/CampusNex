@@ -21,9 +21,9 @@ const RSVP = sequelize.define('RSVP', {
 });
 
 // Establish relationships
-RSVP.belongsTo(User, { foreignKey: 'userId' });
-RSVP.belongsTo(Event, { foreignKey: 'eventId' });
-User.hasMany(RSVP);
-Event.hasMany(RSVP);
+RSVP.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+RSVP.belongsTo(Event, { foreignKey: 'eventId', as: 'event' });
+User.hasMany(RSVP, { foreignKey: 'userId', as: 'rsvps' });
+Event.hasMany(RSVP, { foreignKey: 'eventId', as: 'rsvps' });
 
 module.exports = RSVP;

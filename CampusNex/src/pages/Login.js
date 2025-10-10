@@ -36,8 +36,14 @@ const Login = () => {
     };
 
     const handleGoogleLogin = async () => {
-        setError('Not implemented in the new API yet. Please use email login.');
-        // Future implementation will use OAuth with the backend
+        try {
+            // Redirect to backend Google OAuth
+            const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api';
+            window.location.href = `${API_BASE_URL}/auth/google`;
+        } catch (error) {
+            console.error('Google login error:', error);
+            throw new Error('Failed to initiate Google login');
+        }
     };
 
     const handleFacebookLogin = async () => {

@@ -53,8 +53,23 @@ const Signup = () => {
         }
     };
 
-    const handleSocialLogin = (provider) => {
-        setError(`${provider} signup not implemented yet. Please use email signup.`);
+    const handleSocialLogin = async (provider) => {
+        setError('');
+        setLoading(true);
+
+        try {
+            if (provider === 'Google') {
+                // Redirect to backend Google OAuth with role parameter
+                const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api';
+                window.location.href = `${API_BASE_URL}/auth/google?role=${userType}`;
+            } else {
+                setError(`${provider} signup not implemented yet. Please use email signup.`);
+            }
+        } catch (error) {
+            setError(`Failed to signup with ${provider}. Please try again.`);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -222,8 +237,8 @@ const Signup = () => {
                                         type="button"
                                         onClick={() => setUserType('student')}
                                         className={`p-3 rounded-lg border text-center transition-all duration-300 ${userType === 'student'
-                                                ? 'border-blue-500 bg-blue-50 text-blue-700'
-                                                : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
+                                            ? 'border-blue-500 bg-blue-50 text-blue-700'
+                                            : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
                                             }`}
                                         disabled={loading}
                                     >
@@ -234,8 +249,8 @@ const Signup = () => {
                                         type="button"
                                         onClick={() => setUserType('organizer')}
                                         className={`p-3 rounded-lg border text-center transition-all duration-300 ${userType === 'organizer'
-                                                ? 'border-blue-500 bg-blue-50 text-blue-700'
-                                                : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
+                                            ? 'border-blue-500 bg-blue-50 text-blue-700'
+                                            : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
                                             }`}
                                         disabled={loading}
                                     >

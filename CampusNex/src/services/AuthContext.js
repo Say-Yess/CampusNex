@@ -73,6 +73,7 @@ export function AuthProvider({ children }) {
             login,
             register,
             logout,
+            setUser,
             isAuthenticated: !!user
         }}>
             {children}

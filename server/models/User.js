@@ -18,7 +18,16 @@ const User = sequelize.define('User', {
     },
     password: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: true // Allow null for Google OAuth users
+    },
+    googleId: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        unique: true
+    },
+    provider: {
+        type: DataTypes.ENUM('local', 'google'),
+        defaultValue: 'local'
     },
     firstName: {
         type: DataTypes.STRING,
@@ -59,7 +68,7 @@ const User = sequelize.define('User', {
 }, {
     hooks: {
         beforeCreate: async (user) => {
-            if (user.password) {
+            if (user.password && user.provider === 'local') {
                 const salt = await bcrypt.genSalt(10);
                 user.password = await bcrypt.hash(user.password, salt);
             }

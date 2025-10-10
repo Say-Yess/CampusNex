@@ -8,6 +8,7 @@ import DiscoveryFeed from './pages/DiscoveryFeed';
 import EventDetail from './pages/EventDetail';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import AuthCallback from './pages/AuthCallback';
 import OrganizerDashboard from './pages/OrganizerDashboard';
 import StudentDashboard from './pages/StudentDashboard';
 import Profile from './pages/Profile';
@@ -32,6 +33,7 @@ function App() {
           <Route path="/events/:id" element={<EventDetail />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/about" element={<About />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
 
