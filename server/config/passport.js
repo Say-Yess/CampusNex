@@ -18,7 +18,7 @@ if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
     }, async (accessToken, refreshToken, profile, done) => {
         try {
             console.log('Google OAuth callback - Profile received:', profile.id, profile.emails[0]?.value);
-            
+
             // Check if user already exists with this Google ID
             let user = await User.findOne({ where: { googleId: profile.id } });
 

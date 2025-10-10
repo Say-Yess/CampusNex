@@ -8,7 +8,8 @@
         "dev": "nodemon index.js",
         "test": "jest",
         "seed": "node scripts/seed.js",
-        "migrate": "sequelize-cli db:migrate"
+        "migrate": "sequelize-cli db:migrate",
+        "migrate:google": "node run-migrations.js"
     },
     "dependencies": {
         "bcrypt": "^5.1.1",
