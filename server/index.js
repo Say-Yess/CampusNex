@@ -49,6 +49,36 @@ app.get('/api/debug', (req, res) => {
     });
 });
 
+// Temporary migration endpoint (REMOVE AFTER USE)
+app.get('/api/migrate-db', async (req, res) => {
+    try {
+        const { Sequelize } = require('sequelize');
+        const { sequelize } = require('./config/database');
+        
+        console.log('🔄 Running database migration...');
+        
+        // Import and run the migration
+        const migration = require('./migrations/20251010-add-google-oauth-fields.js');
+        await migration.up(sequelize.getQueryInterface(), Sequelize);
+        
+        console.log('✅ Migration completed successfully!');
+        
+        res.json({
+            success: true,
+            message: 'Database migration completed successfully!',
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('❌ Migration failed:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Migration failed',
+            error: error.message,
+            timestamp: new Date().toISOString()
+        });
+    }
+});
+
 // Routes
 app.use('/api/auth', require('./routes/auth.routes'));
 app.use('/api/events', require('./routes/events.routes'));
