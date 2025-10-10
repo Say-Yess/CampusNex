@@ -43,6 +43,61 @@ router.get('/profile', auth, async (req, res) => {
     }
 });
 
+// @route   GET /api/users/me/test
+// @desc    Test database connectivity and basic queries
+// @access  Private
+router.get('/me/test', auth, async (req, res) => {
+    try {
+        console.log('Testing database for user ID:', req.user.id);
+        
+        // Test 1: Can we find the user?
+        const user = await User.findByPk(req.user.id);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found in test'
+            });
+        }
+        
+        // Test 2: Can we query RSVPs table at all?
+        const allRsvps = await RSVP.findAll({ 
+            limit: 5,
+            raw: true 
+        });
+        
+        // Test 3: Can we query for this user's RSVPs specifically?
+        const userRsvps = await RSVP.findAll({
+            where: { userId: req.user.id },
+            raw: true
+        });
+        
+        // Test 4: Can we query Events table?
+        const allEvents = await Event.findAll({ 
+            limit: 5,
+            raw: true 
+        });
+        
+        res.status(200).json({
+            success: true,
+            tests: {
+                userFound: !!user,
+                userName: user ? `${user.firstName} ${user.lastName}` : null,
+                totalRsvpsInDatabase: allRsvps.length,
+                userRsvpsCount: userRsvps.length,
+                totalEventsInDatabase: allEvents.length,
+                userRsvpsData: userRsvps
+            }
+        });
+    } catch (error) {
+        console.error('Database test error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Database test failed',
+            error: error.message
+        });
+    }
+});
+
 // @route   GET /api/users/me/events
 // @desc    Get events the current user has RSVP'd to
 // @access  Private
