@@ -60,21 +60,21 @@ app.get('/api/debug-user-events', async (req, res) => {
         const token = authHeader.split(' ')[1];
         const jwt = require('jsonwebtoken');
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        
+
         const { User, Event, RSVP } = require('./models');
-        
+
         // Get user info
         const user = await User.findByPk(decoded.id);
-        
+
         // Get all RSVPs for this user
         const rsvps = await RSVP.findAll({
             where: { userId: decoded.id },
             include: [{ model: Event, as: 'event' }]
         });
-        
+
         // Get all events (for comparison)
         const allEvents = await Event.findAll();
-        
+
         res.json({
             user: { id: user.id, email: user.email, provider: user.provider },
             rsvpCount: rsvps.length,
