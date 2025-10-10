@@ -69,7 +69,7 @@ app.get('/api/debug-user-events', async (req, res) => {
         // Get all RSVPs for this user
         const rsvps = await RSVP.findAll({
             where: { userId: decoded.id },
-            include: [{ model: Event }]
+            include: [{ model: Event, as: 'event' }]
         });
         
         // Get all events (for comparison)

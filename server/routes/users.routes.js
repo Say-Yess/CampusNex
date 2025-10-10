@@ -53,6 +53,7 @@ router.get('/me/events', auth, async (req, res) => {
             where: { userId: req.user.id },
             include: [{
                 model: Event,
+                as: 'event',
                 include: [{
                     model: User,
                     as: 'organizer',
@@ -63,16 +64,16 @@ router.get('/me/events', auth, async (req, res) => {
 
         // Map the RSVPs to include the event data and RSVP status
         const events = rsvps.map(rsvp => ({
-            id: rsvp.Event.id,
-            title: rsvp.Event.title,
-            description: rsvp.Event.description,
-            location: rsvp.Event.location,
-            startDate: rsvp.Event.startDate,
-            endDate: rsvp.Event.endDate,
-            category: rsvp.Event.category,
-            imageUrl: rsvp.Event.imageUrl,
+            id: rsvp.event.id,
+            title: rsvp.event.title,
+            description: rsvp.event.description,
+            location: rsvp.event.location,
+            startDate: rsvp.event.startDate,
+            endDate: rsvp.event.endDate,
+            category: rsvp.event.category,
+            imageUrl: rsvp.event.imageUrl,
             rsvpStatus: rsvp.status,
-            organizer: rsvp.Event.organizer
+            organizer: rsvp.event.organizer
         }));
 
         res.status(200).json({
