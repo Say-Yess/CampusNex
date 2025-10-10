@@ -52,6 +52,7 @@ router.get('/', async (req, res) => {
 // @access  Public
 router.get('/:id', async (req, res) => {
     try {
+        console.log('Fetching event with ID:', req.params.id);
         const event = await Event.findByPk(req.params.id, {
             include: [
                 {
@@ -74,11 +75,14 @@ router.get('/:id', async (req, res) => {
         });
 
         if (!event) {
+            console.log('Event not found with ID:', req.params.id);
             return res.status(404).json({
                 success: false,
                 message: 'Event not found'
             });
         }
+        
+        console.log('Event found:', event.id, event.title);
 
         res.status(200).json({
             success: true,
