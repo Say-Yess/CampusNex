@@ -211,17 +211,24 @@ router.get('/google', (req, res, next) => {
 // @desc    Google OAuth callback
 // @access  Public
 router.get('/google/callback', (req, res, next) => {
+    console.log('=== GOOGLE CALLBACK STARTED ===');
+    console.log('Query params:', req.query);
+    console.log('Session:', req.session);
+    
     // Check if Google OAuth is configured
     if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+        console.log('Google OAuth not configured');
         const frontendURL = process.env.FRONTEND_URL || 'http://localhost:3000';
         return res.redirect(`${frontendURL}/login?error=oauth_not_configured`);
     }
 
-    passport.authenticate('google', { 
+    passport.authenticate('google', {
         session: false,
         failureRedirect: '/api/auth/google/failure'
     })(req, res, next);
 }, async (req, res) => {
+    console.log('=== PASSPORT AUTHENTICATION SUCCESS ===');
+    console.log('User from passport:', req.user);
     try {
         let user = req.user;
 
