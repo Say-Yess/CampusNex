@@ -17,8 +17,6 @@ if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
             : "/api/auth/google/callback"
     }, async (accessToken, refreshToken, profile, done) => {
         try {
-            console.log('Google OAuth callback - Profile received:', profile.id, profile.emails[0]?.value);
-
             // Check if user already exists with this Google ID
             let user = await User.findOne({ where: { googleId: profile.id } });
 
@@ -53,9 +51,7 @@ if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
 
             return done(null, newUser);
         } catch (error) {
-            console.error('Google OAuth error in passport strategy:', error);
-            console.error('Error details:', error.message);
-            console.error('Stack trace:', error.stack);
+            console.error('Google OAuth error:', error);
             return done(error, null);
         }
     }));

@@ -211,51 +211,31 @@ router.get('/google', (req, res, next) => {
 // @desc    Google OAuth callback
 // @access  Public
 router.get('/google/callback', (req, res, next) => {
-    console.log('=== GOOGLE CALLBACK STARTED ===');
-    console.log('Query params:', req.query);
-    console.log('Session:', req.session);
-    
     // Check if Google OAuth is configured
     if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
-        console.log('Google OAuth not configured');
         const frontendURL = process.env.FRONTEND_URL || 'http://localhost:3000';
         return res.redirect(`${frontendURL}/login?error=oauth_not_configured`);
     }
 
-    console.log('About to call passport.authenticate');
-    
     passport.authenticate('google', {
         session: false
     }, (err, user, info) => {
-        console.log('Passport authenticate callback:', { err: err?.message, user: !!user, info });
-        
         if (err) {
-            console.error('Passport authentication error:', err);
-            return res.status(500).json({
-                success: false,
-                message: "Passport Authentication Error",
-                error: err.message,
-                stack: err.stack,
-                timestamp: new Date().toISOString()
-            });
+            console.error('Google OAuth authentication error:', err);
+            const frontendURL = process.env.FRONTEND_URL || 'http://localhost:3000';
+            return res.redirect(`${frontendURL}/login?error=oauth_failed`);
         }
-        
+
         if (!user) {
-            console.log('No user returned from passport');
-            return res.status(401).json({
-                success: false,
-                message: "Authentication Failed",
-                info: info,
-                timestamp: new Date().toISOString()
-            });
+            console.log('Google OAuth: No user returned');
+            const frontendURL = process.env.FRONTEND_URL || 'http://localhost:3000';
+            return res.redirect(`${frontendURL}/login?error=oauth_failed`);
         }
-        
+
         req.user = user;
         next();
     })(req, res, next);
 }, async (req, res) => {
-    console.log('=== PASSPORT AUTHENTICATION SUCCESS ===');
-    console.log('User from passport:', req.user);
     try {
         let user = req.user;
 
