@@ -37,7 +37,7 @@ router.get('/status', async (req, res) => {
         const cambodiaEvents = await Event.count({
             where: {
                 id: {
-                    [require('sequelize').Op.like]: 'cambodia-%'
+                    [require('sequelize').Op.startsWith]: 'cambodia-'
                 }
             }
         });

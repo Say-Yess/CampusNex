@@ -253,12 +253,11 @@ const seedCambodiaEvents = async () => {
     try {
         console.log('🌱 Starting SAFE seeding of Cambodia university events...');
         console.log('📊 This will preserve all existing data including users and RSVPs');
-
+        console.log(`📦 Events to process: ${cambodiaEvents.length}`);
+        
         // Check existing events count
         const existingEventsCount = await Event.count();
-        console.log(`📋 Current events in database: ${existingEventsCount}`);
-
-        // Find or create a system organizer
+        console.log(`📋 Current events in database: ${existingEventsCount}`);        // Find or create a system organizer
         let systemOrganizer = await User.findOne({ where: { email: 'system@campusnex.com' } });
         if (!systemOrganizer) {
             systemOrganizer = await User.create({
@@ -276,25 +275,22 @@ const seedCambodiaEvents = async () => {
         let skippedCount = 0;
 
         // Process each Cambodia event
-        for (const eventData of cambodiaEvents) {
+        for (let i = 0; i < cambodiaEvents.length; i++) {
+            const eventData = cambodiaEvents[i];
             try {
-                // Check if event already exists (by ID or title)
-                const existingEvent = await Event.findOne({
-                    where: {
-                        [require('sequelize').Op.or]: [
-                            { id: eventData.id },
-                            { title: eventData.title }
-                        ]
-                    }
-                });
-
-                if (existingEvent) {
+                console.log(`🔄 Processing ${i + 1}/${cambodiaEvents.length}: ${eventData.title}`);
+                
+                // Check if event already exists (by ID or title) - simplified check
+                const existingById = await Event.findByPk(eventData.id);
+                const existingByTitle = await Event.findOne({ where: { title: eventData.title } });
+                
+                if (existingById || existingByTitle) {
                     console.log(`⏭️  Skipped existing: ${eventData.title}`);
                     skippedCount++;
                     continue;
                 }
-
-                // Create new event
+                
+                // Create new event with proper field mapping
                 const newEvent = await Event.create({
                     id: eventData.id,
                     title: eventData.title,
@@ -305,19 +301,19 @@ const seedCambodiaEvents = async () => {
                     category: eventData.category,
                     imageUrl: eventData.imageUrl,
                     capacity: eventData.capacity,
-                    status: eventData.status,
+                    status: eventData.status || 'published',
                     organizerId: systemOrganizer.id
                 });
-
-                console.log(`✅ Added: ${newEvent.title}`);
+                
+                console.log(`✅ Added: ${newEvent.title} (ID: ${newEvent.id})`);
                 addedCount++;
-
+                
             } catch (error) {
-                console.log(`❌ Failed to create: ${eventData.title} - ${error.message}`);
+                console.log(`❌ Failed to create: ${eventData.title}`);
+                console.log(`❌ Error details: ${error.message}`);
+                console.log(`❌ Stack: ${error.stack}`);
             }
-        }
-
-        // Final report
+        }        // Final report
         const finalEventsCount = await Event.count();
         console.log('\n🎉 SAFE seeding completed!');
         console.log(`📊 Events before seeding: ${existingEventsCount}`);
