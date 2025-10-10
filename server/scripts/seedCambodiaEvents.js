@@ -263,7 +263,8 @@ const seedCambodiaEvents = async () => {
         if (!systemOrganizer) {
             systemOrganizer = await User.create({
                 id: uuidv4(),
-                name: 'CampusNex System',
+                firstName: 'CampusNex',
+                lastName: 'System',
                 email: 'system@campusnex.com',
                 role: 'organizer',
                 emailVerified: true
