@@ -49,6 +49,43 @@ app.get('/api/debug', (req, res) => {
     });
 });
 
+// Debug endpoint for user events
+app.get('/api/debug-user-events', async (req, res) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader) {
+            return res.json({ error: 'No auth header' });
+        }
+
+        const token = authHeader.split(' ')[1];
+        const jwt = require('jsonwebtoken');
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        
+        const { User, Event, RSVP } = require('./models');
+        
+        // Get user info
+        const user = await User.findByPk(decoded.id);
+        
+        // Get all RSVPs for this user
+        const rsvps = await RSVP.findAll({
+            where: { userId: decoded.id },
+            include: [{ model: Event }]
+        });
+        
+        // Get all events (for comparison)
+        const allEvents = await Event.findAll();
+        
+        res.json({
+            user: { id: user.id, email: user.email, provider: user.provider },
+            rsvpCount: rsvps.length,
+            rsvps: rsvps.map(r => ({ eventId: r.eventId, status: r.status })),
+            totalEvents: allEvents.length
+        });
+    } catch (error) {
+        res.json({ error: error.message });
+    }
+});
+
 // Routes
 app.use('/api/auth', require('./routes/auth.routes'));
 app.use('/api/events', require('./routes/events.routes'));
