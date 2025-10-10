@@ -48,33 +48,72 @@ router.get('/profile', auth, async (req, res) => {
 // @access  Private
 router.get('/me/events', auth, async (req, res) => {
     try {
-        // Find all RSVPs for the current user
+        console.log('Fetching events for user ID:', req.user.id);
+        
+        // First, check if user exists
+        const user = await User.findByPk(req.user.id);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
+        }
+        console.log('User found:', user.firstName, user.lastName);
+        
+        // Try to find RSVPs without includes first to test basic query
+        const basicRsvps = await RSVP.findAll({
+            where: { userId: req.user.id },
+            raw: true
+        });
+        console.log(`Found ${basicRsvps.length} basic RSVPs for user`);
+        
+        // If no RSVPs, return empty array (this is normal for new users)
+        if (basicRsvps.length === 0) {
+            return res.status(200).json({
+                success: true,
+                count: 0,
+                events: []
+            });
+        }
+        
+        // Find all RSVPs for the current user with includes
         const rsvps = await RSVP.findAll({
             where: { userId: req.user.id },
             include: [{
                 model: Event,
                 as: 'event',
+                required: true, // Only include RSVPs that have valid events
                 include: [{
                     model: User,
                     as: 'organizer',
-                    attributes: ['id', 'firstName', 'lastName']
+                    attributes: ['id', 'firstName', 'lastName'],
+                    required: false // Organizer might not exist
                 }]
             }]
         });
 
+        console.log(`Found ${rsvps.length} RSVPs with event details for user`);
+
         // Map the RSVPs to include the event data and RSVP status
-        const events = rsvps.map(rsvp => ({
-            id: rsvp.event.id,
-            title: rsvp.event.title,
-            description: rsvp.event.description,
-            location: rsvp.event.location,
-            startDate: rsvp.event.startDate,
-            endDate: rsvp.event.endDate,
-            category: rsvp.event.category,
-            imageUrl: rsvp.event.imageUrl,
-            rsvpStatus: rsvp.status,
-            organizer: rsvp.event.organizer
-        }));
+        const events = rsvps.map(rsvp => {
+            if (!rsvp.event) {
+                console.warn('RSVP found without valid event:', rsvp.id);
+                return null;
+            }
+            
+            return {
+                id: rsvp.event.id,
+                title: rsvp.event.title,
+                description: rsvp.event.description,
+                location: rsvp.event.location,
+                startDate: rsvp.event.startDate,
+                endDate: rsvp.event.endDate,
+                category: rsvp.event.category,
+                imageUrl: rsvp.event.imageUrl,
+                rsvpStatus: rsvp.status,
+                organizer: rsvp.event.organizer || { firstName: 'Unknown', lastName: 'Organizer' }
+            };
+        }).filter(event => event !== null); // Remove any null events
 
         res.status(200).json({
             success: true,
@@ -83,9 +122,11 @@ router.get('/me/events', auth, async (req, res) => {
         });
     } catch (error) {
         console.error('Get user events error:', error);
+        console.error('Error stack:', error.stack);
         res.status(500).json({
             success: false,
-            message: 'Server error getting user events'
+            message: 'Server error getting user events',
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
         });
     }
 });
