@@ -222,9 +222,36 @@ router.get('/google/callback', (req, res, next) => {
         return res.redirect(`${frontendURL}/login?error=oauth_not_configured`);
     }
 
+    console.log('About to call passport.authenticate');
+    
     passport.authenticate('google', {
-        session: false,
-        failureRedirect: '/api/auth/google/failure'
+        session: false
+    }, (err, user, info) => {
+        console.log('Passport authenticate callback:', { err: err?.message, user: !!user, info });
+        
+        if (err) {
+            console.error('Passport authentication error:', err);
+            return res.status(500).json({
+                success: false,
+                message: "Passport Authentication Error",
+                error: err.message,
+                stack: err.stack,
+                timestamp: new Date().toISOString()
+            });
+        }
+        
+        if (!user) {
+            console.log('No user returned from passport');
+            return res.status(401).json({
+                success: false,
+                message: "Authentication Failed",
+                info: info,
+                timestamp: new Date().toISOString()
+            });
+        }
+        
+        req.user = user;
+        next();
     })(req, res, next);
 }, async (req, res) => {
     console.log('=== PASSPORT AUTHENTICATION SUCCESS ===');
