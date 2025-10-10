@@ -253,8 +253,9 @@ router.get('/google/callback', (req, res, next) => {
         res.status(500).json({
             success: false,
             message: "Server Error",
-            error: process.env.NODE_ENV === 'production' ? 'Internal Server Error' : error.message,
-            details: process.env.NODE_ENV === 'production' ? undefined : error.stack
+            error: error.message,
+            details: error.stack,
+            timestamp: new Date().toISOString()
         });
     }
 }

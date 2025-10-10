@@ -37,6 +37,18 @@ app.use(passport.session());
 // Serve static files from uploads directory
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+// Debug endpoint to check deployment
+app.get('/api/debug', (req, res) => {
+    res.json({
+        message: 'Server is running',
+        timestamp: new Date().toISOString(),
+        env: process.env.NODE_ENV,
+        hasGoogleCredentials: !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET),
+        hasJWTSecret: !!process.env.JWT_SECRET,
+        version: 'v2-debug-enabled'
+    });
+});
+
 // Routes
 app.use('/api/auth', require('./routes/auth.routes'));
 app.use('/api/events', require('./routes/events.routes'));
