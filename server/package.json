@@ -8,6 +8,7 @@
         "dev": "nodemon index.js",
         "test": "jest",
         "seed": "node scripts/seed.js",
+        "seed:cambodia": "node scripts/seedCambodiaEvents.js",
         "migrate": "sequelize-cli db:migrate",
         "migrate:google": "node run-migrations.js"
     },

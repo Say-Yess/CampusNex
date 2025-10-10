@@ -81,7 +81,7 @@ router.get('/:id', async (req, res) => {
                 message: 'Event not found'
             });
         }
-        
+
         console.log('Event found:', event.id, event.title);
 
         res.status(200).json({
