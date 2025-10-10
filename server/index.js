@@ -55,11 +55,52 @@ app.get('/api/migrate-db', async (req, res) => {
         const { Sequelize } = require('sequelize');
         const { sequelize } = require('./config/database');
         
-        console.log('🔄 Running database migration...');
+        console.log('🔄 Running safe database migration...');
         
-        // Import and run the migration
-        const migration = require('./migrations/20251010-add-google-oauth-fields.js');
-        await migration.up(sequelize.getQueryInterface(), Sequelize);
+        const queryInterface = sequelize.getQueryInterface();
+        
+        // Check and add googleId column
+        try {
+            await queryInterface.addColumn('Users', 'googleId', {
+                type: Sequelize.STRING,
+                allowNull: true,
+                unique: true
+            });
+            console.log('✅ Added googleId column');
+        } catch (error) {
+            if (error.message.includes('already exists')) {
+                console.log('ℹ️ googleId column already exists');
+            } else {
+                throw error;
+            }
+        }
+        
+        // Check and add provider column
+        try {
+            await queryInterface.addColumn('Users', 'provider', {
+                type: Sequelize.ENUM('local', 'google'),
+                allowNull: false,
+                defaultValue: 'local'
+            });
+            console.log('✅ Added provider column');
+        } catch (error) {
+            if (error.message.includes('already exists')) {
+                console.log('ℹ️ provider column already exists');
+            } else {
+                throw error;
+            }
+        }
+        
+        // Make password optional for OAuth users
+        try {
+            await queryInterface.changeColumn('Users', 'password', {
+                type: Sequelize.STRING,
+                allowNull: true
+            });
+            console.log('✅ Made password column optional');
+        } catch (error) {
+            console.log('ℹ️ Password column change skipped:', error.message);
+        }
         
         console.log('✅ Migration completed successfully!');
         
@@ -74,6 +115,7 @@ app.get('/api/migrate-db', async (req, res) => {
             success: false,
             message: 'Migration failed',
             error: error.message,
+            stack: error.stack,
             timestamp: new Date().toISOString()
         });
     }
