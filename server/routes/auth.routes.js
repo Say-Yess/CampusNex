@@ -249,8 +249,13 @@ router.get('/google/callback', (req, res, next) => {
         }))}`);
     } catch (error) {
         console.error('Google OAuth callback error:', error);
-        const frontendURL = process.env.FRONTEND_URL || 'http://localhost:3000';
-        res.redirect(`${frontendURL}/login?error=oauth_failed`);
+        // Temporarily return detailed error for debugging
+        res.status(500).json({
+            success: false,
+            message: "Server Error",
+            error: process.env.NODE_ENV === 'production' ? 'Internal Server Error' : error.message,
+            details: process.env.NODE_ENV === 'production' ? undefined : error.stack
+        });
     }
 }
 );
