@@ -103,27 +103,31 @@ router.get('/me/test', auth, async (req, res) => {
 // @access  Private
 router.get('/me/events', auth, async (req, res) => {
     try {
-        console.log('Fetching events for user ID:', req.user.id);
+        console.log('=== FETCHING USER EVENTS ===');
+        console.log('User ID:', req.user.id);
         
-        // First, check if user exists
+        // Step 1: Check if user exists
         const user = await User.findByPk(req.user.id);
         if (!user) {
+            console.log('User not found');
             return res.status(404).json({
                 success: false,
                 message: 'User not found'
             });
         }
-        console.log('User found:', user.firstName, user.lastName);
+        console.log('✓ User found:', user.firstName, user.lastName);
         
-        // Try to find RSVPs without includes first to test basic query
+        // Step 2: Try basic RSVP query first
+        console.log('Querying RSVPs...');
         const basicRsvps = await RSVP.findAll({
             where: { userId: req.user.id },
             raw: true
         });
-        console.log(`Found ${basicRsvps.length} basic RSVPs for user`);
+        console.log(`✓ Found ${basicRsvps.length} basic RSVPs`);
         
-        // If no RSVPs, return empty array (this is normal for new users)
+        // Return empty array if no RSVPs (normal for new users)
         if (basicRsvps.length === 0) {
+            console.log('No RSVPs found - returning empty array');
             return res.status(200).json({
                 success: true,
                 count: 0,
@@ -131,57 +135,58 @@ router.get('/me/events', auth, async (req, res) => {
             });
         }
         
-        // Find all RSVPs for the current user with includes
-        const rsvps = await RSVP.findAll({
-            where: { userId: req.user.id },
+        // Step 3: Get event IDs from RSVPs
+        const eventIds = basicRsvps.map(rsvp => rsvp.eventId);
+        console.log('Event IDs from RSVPs:', eventIds);
+        
+        // Step 4: Query events separately to avoid association issues
+        const events = await Event.findAll({
+            where: {
+                id: eventIds
+            },
             include: [{
-                model: Event,
-                as: 'event',
-                required: true, // Only include RSVPs that have valid events
-                include: [{
-                    model: User,
-                    as: 'organizer',
-                    attributes: ['id', 'firstName', 'lastName'],
-                    required: false // Organizer might not exist
-                }]
+                model: User,
+                as: 'organizer',
+                attributes: ['id', 'firstName', 'lastName'],
+                required: false
             }]
         });
-
-        console.log(`Found ${rsvps.length} RSVPs with event details for user`);
-
-        // Map the RSVPs to include the event data and RSVP status
-        const events = rsvps.map(rsvp => {
-            if (!rsvp.event) {
-                console.warn('RSVP found without valid event:', rsvp.id);
-                return null;
-            }
-            
+        console.log(`✓ Found ${events.length} events`);
+        
+        // Step 5: Combine RSVP status with event data
+        const userEvents = events.map(event => {
+            const rsvp = basicRsvps.find(r => r.eventId === event.id);
             return {
-                id: rsvp.event.id,
-                title: rsvp.event.title,
-                description: rsvp.event.description,
-                location: rsvp.event.location,
-                startDate: rsvp.event.startDate,
-                endDate: rsvp.event.endDate,
-                category: rsvp.event.category,
-                imageUrl: rsvp.event.imageUrl,
-                rsvpStatus: rsvp.status,
-                organizer: rsvp.event.organizer || { firstName: 'Unknown', lastName: 'Organizer' }
+                id: event.id,
+                title: event.title,
+                description: event.description,
+                location: event.location,
+                startDate: event.startDate,
+                endDate: event.endDate,
+                category: event.category,
+                imageUrl: event.imageUrl,
+                rsvpStatus: rsvp ? rsvp.status : 'attending',
+                organizer: event.organizer || { firstName: 'Unknown', lastName: 'Organizer' }
             };
-        }).filter(event => event !== null); // Remove any null events
+        });
 
+        console.log(`✓ Returning ${userEvents.length} events to frontend`);
         res.status(200).json({
             success: true,
-            count: events.length,
-            events
+            count: userEvents.length,
+            events: userEvents
         });
+        
     } catch (error) {
-        console.error('Get user events error:', error);
+        console.error('❌ ERROR in /me/events:');
+        console.error('Error message:', error.message);
         console.error('Error stack:', error.stack);
+        console.error('Error details:', error);
+        
         res.status(500).json({
             success: false,
             message: 'Server error getting user events',
-            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+            error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
         });
     }
 });
