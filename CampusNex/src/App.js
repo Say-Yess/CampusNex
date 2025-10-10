@@ -1,6 +1,6 @@
 
 import './App.css';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { AuthProvider } from './services/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Home from './pages/Home';
@@ -21,6 +21,12 @@ import Settings from './pages/Settings';
 import About from './pages/About';
 import Leaderboard from './pages/Leaderboard';
 import NotFound from './pages/NotFound';
+
+// Component to handle legacy event route redirects
+function EventRedirect() {
+  const { id } = useParams();
+  return <Navigate to={`/events/${id}`} replace />;
+}
 
 function App() {
   return (
@@ -91,7 +97,7 @@ function App() {
           } />
 
           {/* Redirects for legacy routes */}
-          <Route path="/event/:id" element={<Navigate to="/events/:id" replace />} />
+          <Route path="/event/:id" element={<EventRedirect />} />
 
           {/* 404 Not Found */}
           <Route path="*" element={<NotFound />} />
