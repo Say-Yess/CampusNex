@@ -61,9 +61,11 @@ router.get('/:id', async (req, res) => {
                 },
                 {
                     model: RSVP,
+                    as: 'rsvps',
                     include: [
                         {
                             model: User,
+                            as: 'user',
                             attributes: ['id', 'firstName', 'lastName']
                         }
                     ]
