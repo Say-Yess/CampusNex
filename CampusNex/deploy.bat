@@ -25,7 +25,6 @@ if exist "build" (
     echo 🎯 Next steps:
     echo    Firebase: firebase deploy
     echo    Netlify: Drag the 'build' folder to netlify.com
-    echo    Vercel: vercel --prod
 ) else (
     echo ❌ Build failed! Please check the errors above.
     exit /b 1

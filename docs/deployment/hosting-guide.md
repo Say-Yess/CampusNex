@@ -41,15 +41,6 @@ npm run build
 # Or connect your GitHub repo for auto-deployment
 ```
 
-### 2. Vercel (Frontend + API Routes):
-```bash
-# Install Vercel CLI
-npm install -g vercel
-
-# Deploy
-vercel --prod
-```
-
 ### 3. Traditional Hosting (Frontend + Backend):
 
 #### VPS Hosting (DigitalOcean, Linode, AWS EC2):

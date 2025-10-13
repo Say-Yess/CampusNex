@@ -29,7 +29,7 @@ CampusNex supports multiple deployment strategies including Firebase Hosting, tr
 - **Documentation**: [Hosting Guide](./hosting-guide.md)
 
 ### ☁️ Cloud Platforms
-- **Options**: AWS, Google Cloud, Azure, Netlify, Vercel
+- **Options**: AWS, Google Cloud, Azure, Netlify
 - **Advantages**: Scalability, global distribution, managed services
 - **Documentation**: Check hosting guide for cloud-specific instructions
 

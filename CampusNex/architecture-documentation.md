@@ -249,7 +249,7 @@ CREATE TABLE event_registrations (
 ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
 │                 │     │                 │     │                 │
 │  React Frontend │────▶│  Node.js API    │────▶│  PostgreSQL DB  │
-│  (Netlify/Vercel)│     │  (Heroku/AWS)   │     │  (AWS RDS)      │
+│    (Netlify)    │     │  (Heroku/AWS)   │     │  (AWS RDS)      │
 │                 │◀────│                 │◀────│                 │
 └─────────────────┘     └─────────────────┘     └─────────────────┘
                                │
