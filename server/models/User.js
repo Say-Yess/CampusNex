@@ -61,6 +61,16 @@ const User = sequelize.define('User', {
         type: DataTypes.INTEGER,
         allowNull: true
     },
+    interests: {
+        type: DataTypes.JSON,
+        allowNull: true,
+        comment: 'Array of user interest categories for personalized recommendations'
+    },
+    eventPreferences: {
+        type: DataTypes.JSON,
+        allowNull: true,
+        comment: 'User preferences for event discovery (location, time, etc.)'
+    },
     isActive: {
         type: DataTypes.BOOLEAN,
         defaultValue: true

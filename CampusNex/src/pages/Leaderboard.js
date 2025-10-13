@@ -8,7 +8,7 @@ const Leaderboard = () => (
     <div className="min-h-screen bg-gray-50 flex flex-col">
         <Navbar />
         <main className="flex-1">
-            <div className="bg-gradient-to-br from-blue-600 via-purple-600 to-orange-500 py-16">
+            <div className="bg-gradient-to-br from-blue-600 via-purple-600 to-orange-500 pt-24 pb-16">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
                     <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6">
                         🏆 Campus Leaderboard

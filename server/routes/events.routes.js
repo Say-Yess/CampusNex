@@ -15,10 +15,43 @@ const validate = (req, res, next) => {
 };
 
 // @route   GET /api/events
-// @desc    Get all events
+// @desc    Get all events with flexible ordering
 // @access  Public
 router.get('/', async (req, res) => {
     try {
+        const { order_by = 'random', user_id } = req.query;
+
+        let orderClause;
+        switch (order_by) {
+            case 'chronological':
+                orderClause = [['startDate', 'ASC']];
+                break;
+            case 'newest':
+                orderClause = [['createdAt', 'DESC']];
+                break;
+            case 'popular':
+                // TODO: Implement popularity scoring based on RSVP count
+                orderClause = [['createdAt', 'DESC']];
+                break;
+            case 'interest':
+                // TODO: Implement interest-based ordering
+                orderClause = [['startDate', 'ASC']];
+                break;
+            case 'random':
+            default:
+                // Use different random approaches based on database
+                const dbDialect = require('../config/database').dialect || 'sqlite';
+                if (dbDialect === 'postgres') {
+                    orderClause = [[require('sequelize').fn('RANDOM')]];
+                } else if (dbDialect === 'mysql') {
+                    orderClause = [[require('sequelize').fn('RAND')]];
+                } else {
+                    // SQLite or fallback - use Sequelize literal for RANDOM()
+                    orderClause = [[require('sequelize').literal('RANDOM()')]];
+                }
+                break;
+        }
+
         const events = await Event.findAll({
             include: [
                 {
@@ -30,13 +63,24 @@ router.get('/', async (req, res) => {
             where: {
                 status: 'published'
             },
-            order: [['startDate', 'ASC']]
+            order: orderClause
         });
+
+        // If user is authenticated and requesting interest-based ordering
+        if (order_by === 'interest' && user_id) {
+            // TODO: Implement interest-based scoring
+            // For now, we'll use a placeholder algorithm that considers:
+            // 1. User's past RSVP categories
+            // 2. User's profile interests (major, yearOfStudy)
+            // 3. Event popularity
+            console.log(`Interest-based ordering requested for user ${user_id}`);
+        }
 
         res.status(200).json({
             success: true,
             count: events.length,
-            events
+            events,
+            ordering: order_by
         });
     } catch (error) {
         console.error('Get events error:', error);
@@ -93,6 +137,108 @@ router.get('/:id', async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Server error'
+        });
+    }
+});
+
+// @route   POST /api/events/:id/view
+// @desc    Track user viewing an event (for interest-based recommendations)
+// @access  Private
+router.post('/:id/view', auth, async (req, res) => {
+    try {
+        const eventId = req.params.id;
+        const userId = req.user.id;
+
+        // TODO: Store view interaction in a UserInteraction table
+        // For now, just log for development
+        console.log(`User ${userId} viewed event ${eventId}`);
+
+        res.status(200).json({
+            success: true,
+            message: 'View tracked'
+        });
+    } catch (error) {
+        console.error('Error tracking view:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error tracking view'
+        });
+    }
+});
+
+// @route   GET /api/events/recommendations/:userId
+// @desc    Get personalized event recommendations
+// @access  Private
+router.get('/recommendations/:userId', auth, async (req, res) => {
+    try {
+        const userId = req.params.userId;
+
+        // Verify user can access these recommendations
+        if (req.user.id !== parseInt(userId) && req.user.role !== 'admin') {
+            return res.status(403).json({
+                success: false,
+                message: 'Unauthorized'
+            });
+        }
+
+        // TODO: Implement recommendation algorithm
+        // For now, return events based on user's past RSVPs categories
+        const userRsvps = await RSVP.findAll({
+            where: { userId },
+            include: [{
+                model: Event,
+                as: 'event',
+                attributes: ['category']
+            }]
+        });
+
+        const userCategories = [...new Set(userRsvps.map(rsvp => rsvp.event?.category).filter(Boolean))];
+
+        let recommendedEvents;
+        if (userCategories.length > 0) {
+            // Get events in categories user has shown interest in
+            recommendedEvents = await Event.findAll({
+                where: {
+                    status: 'published',
+                    category: userCategories
+                },
+                include: [
+                    {
+                        model: User,
+                        as: 'organizer',
+                        attributes: ['id', 'firstName', 'lastName', 'email']
+                    }
+                ],
+                order: [['RANDOM()']]
+            });
+        } else {
+            // New user with no history - return random events
+            recommendedEvents = await Event.findAll({
+                where: { status: 'published' },
+                include: [
+                    {
+                        model: User,
+                        as: 'organizer',
+                        attributes: ['id', 'firstName', 'lastName', 'email']
+                    }
+                ],
+                order: [['RANDOM()']],
+                limit: 10
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            count: recommendedEvents.length,
+            events: recommendedEvents,
+            userCategories,
+            recommendation_type: userCategories.length > 0 ? 'interest-based' : 'discovery'
+        });
+    } catch (error) {
+        console.error('Error getting recommendations:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error getting recommendations'
         });
     }
 });

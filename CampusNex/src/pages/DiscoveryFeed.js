@@ -35,29 +35,47 @@ const DiscoveryFeed = () => {
     const navigate = useNavigate();
     const { isAuthenticated } = useAuth();
 
+    // Shuffle array function for randomization
+    const shuffleArray = (array) => {
+        const shuffled = [...array];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled;
+    };
+
     // Fetch events from API
     useEffect(() => {
         const fetchEvents = async () => {
             try {
                 setLoading(true);
                 console.log('Attempting to fetch events from API...');
-                const response = await eventsAPI.getAllEvents();
-                setEvents(response.events);
+
+                // Try to fetch events with random ordering from backend
+                const response = await eventsAPI.getAllEvents('?order_by=random');
+                let eventsData = response.events;
+
+                // Additional client-side randomization for extra shuffle
+                eventsData = shuffleArray(eventsData);
+
+                setEvents(eventsData);
 
                 // Extract unique categories and locations for filters
-                const uniqueCategories = ['All', ...new Set(response.events.map(event => event.category))];
+                const uniqueCategories = ['All', ...new Set(eventsData.map(event => event.category))];
                 setCategories(uniqueCategories.filter(Boolean));
 
-                const uniqueLocations = ['All', ...new Set(response.events.map(event => event.location))];
+                const uniqueLocations = ['All', ...new Set(eventsData.map(event => event.location))];
                 setLocations(uniqueLocations.filter(Boolean));
 
                 setError('');
-                console.log('Successfully loaded events from API:', response.events.length);
+                console.log('Successfully loaded events from API:', eventsData.length);
             } catch (err) {
                 console.error('Error fetching events from API:', err);
                 console.log('Using mock data instead...');
-                // Use mock data when API fails
-                setEvents(mockEvents);
+                // Use mock data when API fails and randomize it
+                const shuffledMockEvents = shuffleArray(mockEvents);
+                setEvents(shuffledMockEvents);
 
                 // Set default campus categories and locations
                 setCategories(['All', 'Academic', 'Sports', 'Cultural', 'Social', 'Career', 'Workshop']);
@@ -249,7 +267,7 @@ const DiscoveryFeed = () => {
     return (
         <div className="min-h-screen bg-white flex flex-col">
             <Navbar />
-            <main className="flex-1 py-12 px-4">
+            <main className="flex-1 pt-24 pb-12 px-4">
                 <div className="max-w-6xl mx-auto">
                     <h1 className="text-4xl font-bold text-royal-blue mb-8 text-center">Discover Events</h1>
 
@@ -289,8 +307,33 @@ const DiscoveryFeed = () => {
                             )}
                         </div>
 
-                        {/* Filter Toggle Button */}
-                        <div className="text-center mb-4">
+                        {/* Ordering and Filter Controls */}
+                        <div className="flex flex-col sm:flex-row gap-4 items-center justify-center mb-4">
+                            {/* Event Ordering Selection */}
+                            <div className="flex items-center gap-2">
+                                <label htmlFor="eventOrder" className="text-sm font-medium text-gray-700">
+                                    Order by:
+                                </label>
+                                <select
+                                    id="eventOrder"
+                                    onChange={(e) => {
+                                        if (e.target.value === 'refresh-random') {
+                                            // Trigger a fresh random fetch
+                                            window.location.reload();
+                                        }
+                                        // TODO: Implement other ordering options
+                                    }}
+                                    className="px-3 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                >
+                                    <option value="random">Random (Current)</option>
+                                    <option value="refresh-random">🔄 Shuffle Again</option>
+                                    <option value="chronological" disabled>Chronological (Coming Soon)</option>
+                                    <option value="interest" disabled>Based on Interests (Coming Soon)</option>
+                                    <option value="popular" disabled>Most Popular (Coming Soon)</option>
+                                </select>
+                            </div>
+
+                            {/* Filter Toggle Button */}
                             <button
                                 onClick={() => setShowFilters(!showFilters)}
                                 className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg transition-all duration-300 border border-blue-200"

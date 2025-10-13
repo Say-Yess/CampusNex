@@ -3,10 +3,10 @@
 
 import apiClient from './client';
 
-// Get all events
-export const getAllEvents = async () => {
+// Get all events with optional query parameters
+export const getAllEvents = async (queryParams = '') => {
     try {
-        const response = await apiClient.get('/events');
+        const response = await apiClient.get(`/events${queryParams}`);
         return response.data;
     } catch (error) {
         throw error.response?.data || { message: 'Failed to get events' };

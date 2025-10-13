@@ -23,6 +23,9 @@
 .firebase/
 firebase-debug.log*
 
+# Vercel
+.vercel
+
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

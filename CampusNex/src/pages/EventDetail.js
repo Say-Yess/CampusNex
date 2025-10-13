@@ -28,6 +28,8 @@ const EventDetail = () => {
             try {
                 setLoading(true);
                 console.log('Attempting to fetch event from API...');
+                console.log('Event ID from useParams:', id);
+                console.log('Event ID type:', typeof id);
                 const response = await eventsAPI.getEventById(id);
                 setEvent(response.event);
 
@@ -175,7 +177,7 @@ const EventDetail = () => {
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col">
             <Navbar />
-            <main className="flex-1 py-8 px-4">
+            <main className="flex-1 pt-24 pb-8 px-4">
                 <div className="max-w-6xl mx-auto">
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         {/* Left Column - Event Info */}

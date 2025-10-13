@@ -58,7 +58,7 @@ const InterestedEvents = () => {
     return (
         <div className="min-h-screen bg-white flex flex-col">
             <Navbar />
-            <main className="flex-1 flex flex-col items-center justify-center py-16 px-4">
+            <main className="flex-1 flex flex-col items-center justify-center pt-24 pb-16 px-4">
                 <div className="w-full max-w-2xl rounded-3xl bg-gradient-to-br from-blue-100 via-blue-200 to-blue-300 p-10 shadow-lg">
                     <h1 className="text-blue-900 text-4xl font-bold mb-8 text-center">My Events</h1>
 
