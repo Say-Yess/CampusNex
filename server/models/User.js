@@ -61,6 +61,16 @@ const User = sequelize.define('User', {
         type: DataTypes.INTEGER,
         allowNull: true
     },
+    organization: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        comment: 'Organization name for organizers'
+    },
+    position: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        comment: 'Position/role within organization'
+    },
     interests: {
         type: DataTypes.JSON,
         allowNull: true,

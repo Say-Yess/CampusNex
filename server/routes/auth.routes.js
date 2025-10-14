@@ -26,7 +26,7 @@ router.post('/register', [
     body('role').isIn(['student', 'organizer']).withMessage('Role must be either student or organizer')
 ], validate, async (req, res) => {
     try {
-        const { email, password, firstName, lastName, role } = req.body;
+        const { email, password, firstName, lastName, role, organization, position } = req.body;
 
         // Check if user already exists
         const existingUser = await User.findOne({ where: { email } });
@@ -37,14 +37,22 @@ router.post('/register', [
             });
         }
 
-        // Create new user
-        const user = await User.create({
+        // Create new user with optional organizer fields
+        const userData = {
             email,
             password,
             firstName,
             lastName,
             role
-        });
+        };
+
+        // Add organization and position for organizers
+        if (role === 'organizer') {
+            if (organization) userData.organization = organization;
+            if (position) userData.position = position;
+        }
+
+        const user = await User.create(userData);
 
         // Initialize user stats for leaderboard
         try {
