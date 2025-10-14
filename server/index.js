@@ -92,6 +92,7 @@ app.use('/api/events', require('./routes/events.routes'));
 app.use('/api/users', require('./routes/users.routes'));
 app.use('/api/leaderboard', require('./routes/leaderboard'));
 app.use('/api/seed', require('./routes/seed.routes')); // Safe database seeding
+app.use('/api/admin', require('./routes/admin')); // Admin utilities
 
 // Error handling middleware
 app.use((err, req, res, next) => {
