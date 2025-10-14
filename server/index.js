@@ -90,7 +90,7 @@ app.get('/api/debug-user-events', async (req, res) => {
 app.use('/api/auth', require('./routes/auth.routes'));
 app.use('/api/events', require('./routes/events.routes'));
 app.use('/api/users', require('./routes/users.routes'));
-app.use('/api/leaderboard', require('./routes/leaderboard.routes'));
+app.use('/api/leaderboard', require('./routes/leaderboard'));
 app.use('/api/seed', require('./routes/seed.routes')); // Safe database seeding
 
 // Error handling middleware

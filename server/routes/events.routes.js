@@ -3,6 +3,7 @@ const { body, validationResult } = require('express-validator');
 const { Event, User, RSVP } = require('../models');
 const { auth, checkRole } = require('../middleware/auth');
 const upload = require('../middleware/upload');
+const { LeaderboardService } = require('../services/leaderboardService');
 const router = express.Router();
 
 // Middleware to handle validation errors
@@ -289,6 +290,17 @@ router.post('/', [
             organizerId: req.user.id
         });
 
+        // Award points for creating an event
+        try {
+            await LeaderboardService.awardEventCreationPoints(
+                req.user.id,
+                newEvent.id,
+                newEvent.title
+            );
+        } catch (pointsError) {
+            console.warn('Failed to award points for event creation:', pointsError);
+        }
+
         res.status(201).json({
             success: true,
             message: 'Event created successfully',
@@ -410,6 +422,9 @@ router.post('/:id/rsvp', [
             }
         });
 
+        const isNewRSVP = !rsvp;
+        const wasAttending = rsvp && rsvp.status === 'attending';
+
         if (rsvp) {
             // Update existing RSVP
             rsvp = await rsvp.update({ status: req.body.status });
@@ -420,6 +435,26 @@ router.post('/:id/rsvp', [
                 userId: req.user.id,
                 status: req.body.status
             });
+        }
+
+        // Award points for attending events (only for new attendances)
+        if (req.body.status === 'attending' && (!wasAttending || isNewRSVP)) {
+            try {
+                // Check if this is early registration (more than 24 hours before event)
+                const eventDate = new Date(event.startDate);
+                const now = new Date();
+                const hoursUntilEvent = (eventDate - now) / (1000 * 60 * 60);
+                const isEarlyRegistration = hoursUntilEvent > 24;
+
+                await LeaderboardService.awardEventAttendancePoints(
+                    req.user.id,
+                    event.id,
+                    event.title,
+                    isEarlyRegistration
+                );
+            } catch (pointsError) {
+                console.warn('Failed to award points for event attendance:', pointsError);
+            }
         }
 
         res.status(200).json({
