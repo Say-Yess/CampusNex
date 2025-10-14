@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const session = require('express-session');
+const pgSession = require('connect-pg-simple')(session);
 const dotenv = require('dotenv');
 const path = require('path');
 const passport = require('./config/passport');
@@ -19,9 +20,14 @@ app.use(cors({
     credentials: true
 }));
 
-// Session configuration for Passport
+// Session configuration for Passport with PostgreSQL store
 app.use(session({
-    secret: process.env.SESSION_SECRET || 'your-session-secret',
+    store: new pgSession({
+        conString: process.env.DATABASE_URL,
+        tableName: 'session', // Use 'session' as table name
+        createTableIfMissing: true // Automatically create session table
+    }),
+    secret: process.env.SESSION_SECRET || process.env.JWT_SECRET || 'your-session-secret',
     resave: false,
     saveUninitialized: false,
     cookie: {

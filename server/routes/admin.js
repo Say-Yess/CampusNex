@@ -122,11 +122,11 @@ const cambodiaEvents = [
 router.post('/seed-cambodia-events', async (req, res) => {
     try {
         console.log('🌱 Starting SAFE seeding of Cambodia university events...');
-        
+
         // Check existing events count
         const existingEventsCount = await Event.count();
         console.log(`📋 Current events in database: ${existingEventsCount}`);
-        
+
         // Find or create a system organizer
         let systemOrganizer = await User.findOne({ where: { email: 'system@campusnex.com' } });
         if (!systemOrganizer) {
