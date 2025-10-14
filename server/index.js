@@ -20,13 +20,8 @@ app.use(cors({
     credentials: true
 }));
 
-// Session configuration for Passport with PostgreSQL store
-app.use(session({
-    store: new pgSession({
-        conString: process.env.DATABASE_URL,
-        tableName: 'session', // Use 'session' as table name
-        createTableIfMissing: true // Automatically create session table
-    }),
+// Session configuration for Passport
+let sessionConfig = {
     secret: process.env.SESSION_SECRET || process.env.JWT_SECRET || 'your-session-secret',
     resave: false,
     saveUninitialized: false,
@@ -34,7 +29,23 @@ app.use(session({
         secure: process.env.NODE_ENV === 'production',
         maxAge: 24 * 60 * 60 * 1000 // 24 hours
     }
-}));
+};
+
+// Use PostgreSQL session store in production to avoid memory leaks
+if (process.env.NODE_ENV === 'production' && process.env.DATABASE_URL) {
+    try {
+        sessionConfig.store = new pgSession({
+            conString: process.env.DATABASE_URL,
+            tableName: 'session',
+            createTableIfMissing: true
+        });
+        console.log('✅ Using PostgreSQL session store for production');
+    } catch (error) {
+        console.warn('⚠️ Failed to initialize PostgreSQL session store, falling back to MemoryStore:', error.message);
+    }
+}
+
+app.use(session(sessionConfig));
 
 // Initialize Passport
 app.use(passport.initialize());
