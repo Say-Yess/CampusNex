@@ -29,6 +29,16 @@ const Footer = () => {
             ]
         },
         {
+            title: 'Community',
+            links: [
+                { label: 'Leaderboard', href: '/leaderboard' },
+                { label: 'Top Students', href: '/leaderboard?tab=students' },
+                { label: 'Campus Rankings', href: '/leaderboard?tab=rankings' },
+                { label: 'Achievement Guide', href: '/achievements' },
+                { label: 'Point System', href: '/points-guide' },
+            ]
+        },
+        {
             title: 'Help',
             links: [
                 { label: 'Account Support', href: '/support' },

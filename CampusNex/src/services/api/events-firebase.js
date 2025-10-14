@@ -18,6 +18,7 @@ import {
     arrayRemove,
     serverTimestamp
 } from 'firebase/firestore';
+import { addPoints, POINT_VALUES, ACTIVITY_TYPES } from './leaderboard-firebase';
 
 // Get all events
 export const getAllEvents = async () => {
@@ -162,6 +163,17 @@ export const createEvent = async (eventData) => {
         // Create the event
         const docRef = await addDoc(collection(db, 'events'), newEvent);
 
+        // Award points for creating an event
+        try {
+            await addPoints(user.uid, POINT_VALUES.CREATE_EVENT, ACTIVITY_TYPES.CREATE_EVENT, {
+                eventId: docRef.id,
+                eventTitle: eventData.title,
+                eventType: eventData.type || 'general'
+            });
+        } catch (pointsError) {
+            console.warn('Failed to add points for event creation:', pointsError);
+        }
+
         return {
             event: {
                 id: docRef.id,
@@ -284,6 +296,8 @@ export const rsvpToEvent = async (eventId, status) => {
             throw new Error('Event not found');
         }
 
+        const eventData = eventDoc.data();
+
         // Handle different RSVP statuses
         if (status === 'attending') {
             // Add to attendees, remove from interested
@@ -291,6 +305,24 @@ export const rsvpToEvent = async (eventId, status) => {
                 attendees: arrayUnion(user.uid),
                 interested: arrayRemove(user.uid)
             });
+
+            // Award points for attending events
+            try {
+                let points = POINT_VALUES.ATTEND_EVENT;
+
+                // Bonus points for early registration (more than 24 hours before event)
+                if (eventData.startDate && eventData.startDate.toDate() > new Date(Date.now() + 24 * 60 * 60 * 1000)) {
+                    points += POINT_VALUES.EARLY_REGISTRATION;
+                }
+
+                await addPoints(user.uid, points, ACTIVITY_TYPES.ATTEND_EVENT, {
+                    eventId,
+                    eventTitle: eventData.title,
+                    earlyRegistration: points > POINT_VALUES.ATTEND_EVENT
+                });
+            } catch (pointsError) {
+                console.warn('Failed to add points for event attendance:', pointsError);
+            }
         } else if (status === 'interested') {
             // Add to interested, remove from attendees
             await updateDoc(eventRef, {

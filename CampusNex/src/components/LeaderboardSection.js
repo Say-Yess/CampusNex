@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Leaderboard } from './ui';
-
-// API base URL - should be moved to environment variables
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+import { leaderboardAPI } from '../services/api';
+import { useAuth } from '../services/AuthContext';
 
 // Fallback data when API is not available
 const fallbackStudents = [
@@ -49,36 +48,42 @@ const LeaderboardSection = () => {
         { label: 'Arts', value: 'arts' }
     ];
 
-    // Fetch leaderboard data from API
-    const fetchLeaderboardData = async (type = 'students', page = 1, limit = 10) => {
+    // Fetch leaderboard data from Firebase
+    const fetchLeaderboardData = async (type = 'students', page = 1, limit = 50) => {
         try {
             setLoading(true);
             setError(null);
 
-            const response = await fetch(
-                `${API_BASE_URL}/leaderboard?type=${type}&page=${page}&limit=${limit}&sortBy=totalEvents&order=desc`
-            );
+            // Get Firebase leaderboard data
+            const firebaseData = await leaderboardAPI.getLeaderboard(limit);
 
-            if (!response.ok) {
-                throw new Error('API not available, using sample data');
-            }
+            // Transform Firebase data to match the expected format
+            const transformedData = firebaseData.map((user, index) => ({
+                id: user.userId,
+                name: user.displayName,
+                department: 'Student', // Could be enhanced with user department data
+                profileImage: user.photoURL,
+                totalEvents: Math.floor(user.totalPoints / 5), // Convert points to events approximation
+                totalPoints: user.totalPoints,
+                rank: user.rank
+            }));
 
-            const data = await response.json();
-
-            if (data.success) {
-                setLeaderboardData(data.data.leaderboard);
-                setPagination(data.data.pagination);
-            } else {
-                throw new Error(data.message || 'Failed to load leaderboard');
-            }
+            setLeaderboardData(transformedData);
+            setPagination({
+                currentPage: 1,
+                totalPages: 1,
+                totalItems: transformedData.length,
+                hasNextPage: false,
+                hasPrevPage: false
+            });
 
         } catch (err) {
-            console.warn('API not available, using fallback data:', err.message);
+            console.warn('Firebase leaderboard not available, using fallback data:', err.message);
 
-            // Use fallback data when API is not available
+            // Use fallback data when Firebase is not available
             const fallbackData = type === 'students' ? fallbackStudents : fallbackOrganizers;
 
-            setLeaderboardData(fallbackData); // Show all data for demo
+            setLeaderboardData(fallbackData);
             setPagination({
                 currentPage: 1,
                 totalPages: 1,
@@ -87,7 +92,6 @@ const LeaderboardSection = () => {
                 hasPrevPage: false
             });
 
-            // Clear error since we have fallback data
             setError(null);
         } finally {
             setLoading(false);

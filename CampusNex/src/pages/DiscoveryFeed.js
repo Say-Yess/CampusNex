@@ -307,32 +307,8 @@ const DiscoveryFeed = () => {
                             )}
                         </div>
 
-                        {/* Ordering and Filter Controls */}
-                        <div className="flex flex-col sm:flex-row gap-4 items-center justify-center mb-4">
-                            {/* Event Ordering Selection */}
-                            <div className="flex items-center gap-2">
-                                <label htmlFor="eventOrder" className="text-sm font-medium text-gray-700">
-                                    Order by:
-                                </label>
-                                <select
-                                    id="eventOrder"
-                                    onChange={(e) => {
-                                        if (e.target.value === 'refresh-random') {
-                                            // Trigger a fresh random fetch
-                                            window.location.reload();
-                                        }
-                                        // TODO: Implement other ordering options
-                                    }}
-                                    className="px-3 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                >
-                                    <option value="random">Random (Current)</option>
-                                    <option value="refresh-random">🔄 Shuffle Again</option>
-                                    <option value="chronological" disabled>Chronological (Coming Soon)</option>
-                                    <option value="interest" disabled>Based on Interests (Coming Soon)</option>
-                                    <option value="popular" disabled>Most Popular (Coming Soon)</option>
-                                </select>
-                            </div>
-
+                        {/* Filter Controls */}
+                        <div className="flex justify-center mb-4">
                             {/* Filter Toggle Button */}
                             <button
                                 onClick={() => setShowFilters(!showFilters)}
@@ -577,10 +553,6 @@ const DiscoveryFeed = () => {
                                     );
                                 })}
                             </div>
-
-                            <p className="text-center mt-4">
-                                Event {currentIndex + 1} of {filteredEvents.length}
-                            </p>
                         </div>
                     ) : (
                         <div className="flex items-center justify-center h-64">

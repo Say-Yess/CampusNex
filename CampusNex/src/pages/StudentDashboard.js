@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import PointsWidget from '../components/PointsWidget';
 import { eventsAPI } from '../services/api';
 
 const StudentDashboard = () => {
@@ -211,6 +212,9 @@ const StudentDashboard = () => {
                                     </div>
                                 </div>
 
+                                {/* Points Widget */}
+                                <PointsWidget />
+
                                 {/* Main Content Grid */}
                                 <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
                                     {/* Calendar/Schedule */}
@@ -236,16 +240,16 @@ const StudentDashboard = () => {
                                                         <div className="flex items-center space-x-4">
                                                             <div className="flex-shrink-0">
                                                                 <div className={`w-10 h-10 ${event.category === 'Technology' ? 'bg-blue-100' :
-                                                                        event.category === 'Career' ? 'bg-orange-100' :
-                                                                            event.category === 'Workshop' ? 'bg-purple-100' :
-                                                                                event.category === 'Business' ? 'bg-green-100' :
-                                                                                    'bg-gray-100'
+                                                                    event.category === 'Career' ? 'bg-orange-100' :
+                                                                        event.category === 'Workshop' ? 'bg-purple-100' :
+                                                                            event.category === 'Business' ? 'bg-green-100' :
+                                                                                'bg-gray-100'
                                                                     } rounded-lg flex items-center justify-center`}>
                                                                     <svg className={`w-5 h-5 ${event.category === 'Technology' ? 'text-blue-600' :
-                                                                            event.category === 'Career' ? 'text-orange-600' :
-                                                                                event.category === 'Workshop' ? 'text-purple-600' :
-                                                                                    event.category === 'Business' ? 'text-green-600' :
-                                                                                        'text-gray-600'
+                                                                        event.category === 'Career' ? 'text-orange-600' :
+                                                                            event.category === 'Workshop' ? 'text-purple-600' :
+                                                                                event.category === 'Business' ? 'text-green-600' :
+                                                                                    'text-gray-600'
                                                                         }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                                                     </svg>
@@ -258,8 +262,8 @@ const StudentDashboard = () => {
                                                             </div>
                                                         </div>
                                                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${index === 0 ? 'bg-green-100 text-green-800' :
-                                                                index === 1 ? 'bg-blue-100 text-blue-800' :
-                                                                    'bg-yellow-100 text-yellow-800'
+                                                            index === 1 ? 'bg-blue-100 text-blue-800' :
+                                                                'bg-yellow-100 text-yellow-800'
                                                             }`}>
                                                             {index === 0 ? 'Attending' : index === 1 ? 'Interested' : 'Available'}
                                                         </span>

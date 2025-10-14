@@ -15,6 +15,7 @@ import {
     getDoc,
     serverTimestamp
 } from 'firebase/firestore';
+import { initializeUserStats } from './leaderboard-firebase';
 
 // Register a new user
 export const register = async (userData) => {
@@ -38,6 +39,13 @@ export const register = async (userData) => {
             createdAt: serverTimestamp(),
             ...otherData
         });
+
+        // Initialize user stats for leaderboard
+        try {
+            await initializeUserStats(user.uid);
+        } catch (statsError) {
+            console.warn('Failed to initialize user stats:', statsError);
+        }
 
         // Return user data
         return {

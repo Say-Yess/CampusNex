@@ -4,17 +4,19 @@ const { User } = require('../models');
 
 // Check if Google OAuth credentials are configured
 if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
-    console.warn('⚠️  Google OAuth credentials not configured. Google authentication will be disabled.');
-    console.warn('   To enable Google OAuth, set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in your .env file.');
-    console.warn('   See docs/setup/google-oauth-setup.md for setup instructions.');
+    // Google OAuth is disabled - this is normal for basic authentication
+    // console.warn('⚠️  Google OAuth credentials not configured. Google authentication will be disabled.');
+    // console.warn('   To enable Google OAuth, set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in your .env file.');
+    // console.warn('   See docs/setup/google-oauth-setup.md for setup instructions.');
 } else {
     // Configure Google OAuth Strategy
     passport.use(new GoogleStrategy({
         clientID: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        callbackURL: process.env.NODE_ENV === 'production'
-            ? "https://campusnex-production.up.railway.app/api/auth/google/callback"
-            : "/api/auth/google/callback"
+        callbackURL: process.env.GOOGLE_CALLBACK_URL || 
+            (process.env.NODE_ENV === 'production'
+                ? "https://campusnex-backend-production.up.railway.app/api/auth/google/callback"
+                : "/api/auth/google/callback")
     }, async (accessToken, refreshToken, profile, done) => {
         try {
             // Check if user already exists with this Google ID

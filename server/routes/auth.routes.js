@@ -3,6 +3,7 @@ const { body, validationResult } = require('express-validator');
 const jwt = require('jsonwebtoken');
 const passport = require('../config/passport');
 const { User } = require('../models');
+const { LeaderboardService } = require('../services/leaderboardService');
 const router = express.Router();
 
 // Middleware to handle validation errors
@@ -44,6 +45,13 @@ router.post('/register', [
             lastName,
             role
         });
+
+        // Initialize user stats for leaderboard
+        try {
+            await LeaderboardService.initializeUserStats(user.id);
+        } catch (statsError) {
+            console.warn('Failed to initialize user stats:', statsError);
+        }
 
         // Generate JWT token
         const token = jwt.sign(
