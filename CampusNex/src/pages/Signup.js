@@ -24,11 +24,36 @@ const Signup = () => {
         setError('');
         setLoading(true);
 
+        // Frontend validation
+        if (!fullName.trim()) {
+            setError('Full name is required');
+            setLoading(false);
+            return;
+        }
+        
+        if (!email.trim()) {
+            setError('Email is required');
+            setLoading(false);
+            return;
+        }
+        
+        if (!password || password.length < 6) {
+            setError('Password must be at least 6 characters long');
+            setLoading(false);
+            return;
+        }
+        
+        if (userType === 'organizer' && !organization.trim()) {
+            setError('Organization name is required for organizers');
+            setLoading(false);
+            return;
+        }
+
         try {
             // Split full name into first and last name
             const nameParts = fullName.trim().split(' ');
             const firstName = nameParts[0] || '';
-            const lastName = nameParts.slice(1).join(' ') || '';
+            const lastName = nameParts.slice(1).join(' ') || 'User'; // Default last name if not provided
 
             await register({
                 email,
