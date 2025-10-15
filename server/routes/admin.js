@@ -2,6 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const { Event, User } = require('../models');
+const { sequelize } = require('../config/database');
 const { v4: uuidv4 } = require('uuid');
 
 // Cambodia University Events Data (using UUIDs for database compatibility)
@@ -213,6 +214,70 @@ router.post('/seed-cambodia-events', async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Failed to seed Cambodia events',
+            error: error.message
+        });
+    }
+});
+
+// Endpoint to add missing columns to Users table
+router.post('/add-user-columns', async (req, res) => {
+    try {
+        console.log('🔧 Adding missing columns to Users table...');
+        
+        const results = {
+            organization: { added: false, error: null },
+            position: { added: false, error: null }
+        };
+
+        // Add organization column
+        try {
+            await sequelize.query(`
+                ALTER TABLE "Users" 
+                ADD COLUMN "organization" VARCHAR(255)
+            `);
+            results.organization.added = true;
+            console.log('✅ Added organization column');
+        } catch (error) {
+            if (error.message.includes('already exists')) {
+                console.log('⚠️ Organization column already exists');
+                results.organization.error = 'Column already exists';
+            } else {
+                console.error('❌ Error adding organization column:', error.message);
+                results.organization.error = error.message;
+            }
+        }
+
+        // Add position column
+        try {
+            await sequelize.query(`
+                ALTER TABLE "Users" 
+                ADD COLUMN "position" VARCHAR(255)
+            `);
+            results.position.added = true;
+            console.log('✅ Added position column');
+        } catch (error) {
+            if (error.message.includes('already exists')) {
+                console.log('⚠️ Position column already exists');
+                results.position.error = 'Column already exists';
+            } else {
+                console.error('❌ Error adding position column:', error.message);
+                results.position.error = error.message;
+            }
+        }
+
+        console.log('🎉 Migration completed!');
+        
+        res.status(200).json({
+            success: true,
+            message: 'User table migration completed',
+            results: results
+        });
+
+    } catch (error) {
+        console.error('❌ Migration failed:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to add columns to Users table',
             error: error.message
         });
     }
