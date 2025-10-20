@@ -158,16 +158,22 @@ class LeaderboardService {
     }
 
     /**
-     * Get leaderboard
+     * Get leaderboard with optional role filtering
      */
-    static async getLeaderboard(limit = 50, offset = 0) {
+    static async getLeaderboard(limit = 50, offset = 0, role = null) {
         try {
+            const whereClause = {};
+            if (role) {
+                whereClause.role = role;
+            }
+
             const leaderboard = await UserStats.findAll({
                 include: [
                     {
                         model: User,
                         as: 'user',
-                        attributes: ['id', 'firstName', 'lastName', 'email', 'profilePicture', 'major']
+                        attributes: ['id', 'firstName', 'lastName', 'email', 'profilePicture', 'major', 'role'],
+                        where: whereClause
                     }
                 ],
                 order: [['totalPoints', 'DESC']],
@@ -185,12 +191,27 @@ class LeaderboardService {
                 email: entry.user.email,
                 profilePicture: entry.user.profilePicture,
                 major: entry.user.major,
+                role: entry.user.role,
                 lastActivity: entry.lastActivity
             }));
         } catch (error) {
             console.error('Error getting leaderboard:', error);
             throw error;
         }
+    }
+
+    /**
+     * Get student leaderboard
+     */
+    static async getStudentLeaderboard(limit = 50, offset = 0) {
+        return this.getLeaderboard(limit, offset, 'student');
+    }
+
+    /**
+     * Get organizer leaderboard
+     */
+    static async getOrganizerLeaderboard(limit = 50, offset = 0) {
+        return this.getLeaderboard(limit, offset, 'organizer');
     }
 
     /**

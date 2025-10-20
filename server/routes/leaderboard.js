@@ -91,6 +91,80 @@ router.get('/activities', auth, async (req, res) => {
 });
 
 /**
+ * @route GET /api/leaderboard/students
+ * @desc Get student leaderboard
+ * @access Public
+ */
+router.get('/students', async (req, res) => {
+    try {
+        const { limit = 50, offset = 0, page = 1 } = req.query;
+        const actualOffset = page > 1 ? (page - 1) * limit : offset;
+
+        const leaderboard = await LeaderboardService.getStudentLeaderboard(
+            parseInt(limit),
+            parseInt(actualOffset)
+        );
+
+        res.json({
+            success: true,
+            data: {
+                leaderboard,
+                pagination: {
+                    currentPage: parseInt(page),
+                    limit: parseInt(limit),
+                    offset: parseInt(actualOffset),
+                    total: leaderboard.length
+                }
+            }
+        });
+    } catch (error) {
+        console.error('Student leaderboard error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch student leaderboard',
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
+    }
+});
+
+/**
+ * @route GET /api/leaderboard/organizers
+ * @desc Get organizer leaderboard
+ * @access Public
+ */
+router.get('/organizers', async (req, res) => {
+    try {
+        const { limit = 50, offset = 0, page = 1 } = req.query;
+        const actualOffset = page > 1 ? (page - 1) * limit : offset;
+
+        const leaderboard = await LeaderboardService.getOrganizerLeaderboard(
+            parseInt(limit),
+            parseInt(actualOffset)
+        );
+
+        res.json({
+            success: true,
+            data: {
+                leaderboard,
+                pagination: {
+                    currentPage: parseInt(page),
+                    limit: parseInt(limit),
+                    offset: parseInt(actualOffset),
+                    total: leaderboard.length
+                }
+            }
+        });
+    } catch (error) {
+        console.error('Organizer leaderboard error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch organizer leaderboard',
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
+    }
+});
+
+/**
  * @route GET /api/leaderboard/top/:count
  * @desc Get top N users
  * @access Public
@@ -98,7 +172,8 @@ router.get('/activities', auth, async (req, res) => {
 router.get('/top/:count', async (req, res) => {
     try {
         const { count } = req.params;
-        const topUsers = await LeaderboardService.getLeaderboard(parseInt(count) || 10, 0);
+        const { role } = req.query;
+        const topUsers = await LeaderboardService.getLeaderboard(parseInt(count) || 10, 0, role);
 
         res.json({
             success: true,

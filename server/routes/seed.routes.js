@@ -2,6 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const { seedCambodiaEvents } = require('../scripts/seedCambodiaEvents');
+const { seedUsersAndEvents } = require('../scripts/seedUsersAndEvents');
 
 // Safe endpoint to seed Cambodia university events
 router.post('/cambodia-events', async (req, res) => {
@@ -56,6 +57,39 @@ router.get('/status', async (req, res) => {
         res.status(500).json({
             success: false,
             error: error.message
+        });
+    }
+});
+
+// Comprehensive seeding endpoint for users and events
+router.post('/users-and-events', async (req, res) => {
+    try {
+        console.log('🌱 Starting comprehensive seeding of users and events...');
+
+        const result = await seedUsersAndEvents();
+
+        res.json({
+            success: true,
+            message: 'Users and events seeded successfully!',
+            data: result,
+            timestamp: new Date().toISOString(),
+            summary: {
+                totalUsers: result.studentsCreated + result.organizersCreated,
+                students: result.studentsCreated,
+                organizers: result.organizersCreated,
+                events: result.eventsCreated,
+                rsvps: result.rsvpsCreated,
+                userStats: result.userStatsCreated
+            }
+        });
+
+    } catch (error) {
+        console.error('❌ Comprehensive seeding error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to seed users and events',
+            error: error.message,
+            timestamp: new Date().toISOString()
         });
     }
 });

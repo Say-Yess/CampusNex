@@ -223,7 +223,7 @@ router.post('/seed-cambodia-events', async (req, res) => {
 router.post('/add-user-columns', async (req, res) => {
     try {
         console.log('🔧 Adding missing columns to Users table...');
-        
+
         const results = {
             organization: { added: false, error: null },
             position: { added: false, error: null }
@@ -266,7 +266,7 @@ router.post('/add-user-columns', async (req, res) => {
         }
 
         console.log('🎉 Migration completed!');
-        
+
         res.status(200).json({
             success: true,
             message: 'User table migration completed',

@@ -14,6 +14,7 @@ import StudentDashboard from './pages/StudentDashboard';
 import Profile from './pages/Profile';
 import SubmitEvent from './pages/SubmitEvent';
 import CreateEvent from './pages/CreateEvent';
+import CreateEventPage from './pages/CreateEventPage';
 import AdminPanel from './pages/AdminPanel';
 import InterestedEvents from './pages/InterestedEvents';
 import Notifications from './pages/Notifications';
@@ -72,6 +73,11 @@ function App() {
             </ProtectedRoute>
           } />
           <Route path="/create-event" element={
+            <ProtectedRoute requiredRole="organizer">
+              <CreateEventPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/create-event-legacy" element={
             <ProtectedRoute requiredRole="organizer">
               <CreateEvent />
             </ProtectedRoute>

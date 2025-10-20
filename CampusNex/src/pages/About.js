@@ -10,7 +10,7 @@ const faqs = [
     },
     {
         question: 'How do I join as an organizer?',
-        answer: 'Click "Create Event" and fill out the organizer application form. Once approved, you can post events.'
+        answer: 'Sign up as an organizer and fill out the organizer application form. Once approved, you can post events.'
     },
     {
         question: 'How do I RSVP for an event?',

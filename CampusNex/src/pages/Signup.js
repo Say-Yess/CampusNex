@@ -30,19 +30,19 @@ const Signup = () => {
             setLoading(false);
             return;
         }
-        
+
         if (!email.trim()) {
             setError('Email is required');
             setLoading(false);
             return;
         }
-        
+
         if (!password || password.length < 6) {
             setError('Password must be at least 6 characters long');
             setLoading(false);
             return;
         }
-        
+
         if (userType === 'organizer' && !organization.trim()) {
             setError('Organization name is required for organizers');
             setLoading(false);

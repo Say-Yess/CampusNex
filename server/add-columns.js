@@ -38,7 +38,7 @@ async function addMissingColumns() {
         }
 
         console.log('🎉 Migration completed successfully!');
-        
+
     } catch (error) {
         console.error('❌ Migration failed:', error);
     } finally {

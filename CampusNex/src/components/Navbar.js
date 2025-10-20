@@ -27,7 +27,10 @@ const Navbar = () => {
         ? [
             { label: 'Profile', path: '/profile' },
             ...(user?.role === 'organizer'
-                ? [{ label: 'Create Event', path: '/create-event' }]
+                ? [
+                    { label: 'Dashboard', path: '/organizer-dashboard' },
+                    { label: 'Create Event', path: '/create-event' }
+                ]
                 : [{ label: 'My Events', path: '/interested-events' }]
             ),
             { label: 'Logout', onClick: handleLogout, type: 'button', variant: 'primary' }

@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Leaderboard } from './ui';
-import { leaderboardAPI } from '../services/api';
-import { useAuth } from '../services/AuthContext';
 
 // Fallback data when API is not available
 const fallbackStudents = [
@@ -48,39 +46,74 @@ const LeaderboardSection = () => {
         { label: 'Arts', value: 'arts' }
     ];
 
-    // Fetch leaderboard data from Firebase
+    // Fetch leaderboard data from Railway backend with real-time updates
     const fetchLeaderboardData = async (type = 'students', page = 1, limit = 50) => {
         try {
             setLoading(true);
             setError(null);
 
-            // Get Firebase leaderboard data
-            const firebaseData = await leaderboardAPI.getLeaderboard(limit);
+            // Determine which endpoint to use based on type
+            const endpoint = type === 'students' ? '/api/leaderboard/students' : '/api/leaderboard/organizers';
 
-            // Transform Firebase data to match the expected format
-            const transformedData = firebaseData.map((user, index) => ({
-                id: user.userId,
-                name: user.displayName,
-                department: 'Student', // Could be enhanced with user department data
-                profileImage: user.photoURL,
-                totalEvents: Math.floor(user.totalPoints / 5), // Convert points to events approximation
-                totalPoints: user.totalPoints,
-                rank: user.rank
-            }));
+            // Use the full Railway backend URL directly for better reliability
+            const apiBaseUrl = process.env.REACT_APP_API_BASE_URL || 'https://campusnex-backend-production.up.railway.app/api';
+            const fullUrl = `${apiBaseUrl}${endpoint}?limit=${limit}&page=${page}`;
 
-            setLeaderboardData(transformedData);
-            setPagination({
-                currentPage: 1,
-                totalPages: 1,
-                totalItems: transformedData.length,
-                hasNextPage: false,
-                hasPrevPage: false
+            console.log('Fetching leaderboard data from:', fullUrl);
+
+            // Make API call to Railway backend with timeout
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
+            const response = await fetch(fullUrl, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                signal: controller.signal
             });
 
-        } catch (err) {
-            console.warn('Firebase leaderboard not available, using fallback data:', err.message);
+            clearTimeout(timeoutId);
 
-            // Use fallback data when Firebase is not available
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            console.log('API Response:', data);
+
+            if (data.success && data.data.leaderboard) {
+                // Transform Railway backend data to match the expected format
+                const transformedData = data.data.leaderboard.map((user) => ({
+                    id: user.userId,
+                    name: user.displayName,
+                    department: user.role === 'student' ? 'Student' : (user.role === 'organizer' ? 'Organizer' : 'User'),
+                    profileImage: user.profilePicture,
+                    totalEvents: type === 'students' ? user.eventsAttended : user.eventsCreated,
+                    totalPoints: user.totalPoints,
+                    rank: user.rank,
+                    email: user.email,
+                    role: user.role
+                }));
+
+                setLeaderboardData(transformedData);
+                setPagination({
+                    currentPage: data.data.pagination.currentPage,
+                    totalPages: Math.ceil(data.data.pagination.total / limit),
+                    totalItems: data.data.pagination.total,
+                    hasNextPage: data.data.pagination.currentPage * limit < data.data.pagination.total,
+                    hasPrevPage: data.data.pagination.currentPage > 1
+                });
+
+                console.log(`Successfully loaded ${transformedData.length} ${type} from backend`);
+            } else {
+                throw new Error('Invalid response format from server');
+            }
+
+        } catch (err) {
+            console.warn('Railway backend error:', err.message);
+
+            // Use fallback data when backend is not available
             const fallbackData = type === 'students' ? fallbackStudents : fallbackOrganizers;
 
             setLeaderboardData(fallbackData);
@@ -92,7 +125,7 @@ const LeaderboardSection = () => {
                 hasPrevPage: false
             });
 
-            setError(null);
+            setError('Backend not available - displaying sample data');
         } finally {
             setLoading(false);
         }
@@ -100,6 +133,18 @@ const LeaderboardSection = () => {
     useEffect(() => {
         fetchLeaderboardData(activeTab, 1, 10);
     }, [activeTab]);
+
+    // Auto-refresh real-time data every 30 seconds
+    useEffect(() => {
+        const interval = setInterval(() => {
+            if (!loading && !error) {
+                console.log('Auto-refreshing leaderboard data...');
+                fetchLeaderboardData(activeTab, pagination.currentPage, 10);
+            }
+        }, 30000); // Refresh every 30 seconds
+
+        return () => clearInterval(interval);
+    }, [activeTab, pagination.currentPage, loading, error]);
 
     // Handle tab change
     const handleTabChange = (tab) => {
@@ -157,16 +202,40 @@ const LeaderboardSection = () => {
                     </div>
                 </div>
 
-                {/* Info message when using sample data */}
-                {!error && leaderboardData.length > 0 && (
-                    <div className="max-w-3xl mx-auto mb-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                        <p className="text-blue-700 text-center text-sm">
-                            📊 Displaying sample leaderboard data. Start the backend server to see live data.
-                        </p>
+                {/* Status messages and manual refresh */}
+                {error && (
+                    <div className="max-w-3xl mx-auto mb-8 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <div className="flex items-center justify-between">
+                            <p className="text-yellow-700 text-sm">
+                                ⚠️ {error}
+                            </p>
+                            <button
+                                onClick={() => fetchLeaderboardData(activeTab, 1, 10)}
+                                disabled={loading}
+                                className="px-3 py-1 bg-yellow-600 text-white text-xs rounded hover:bg-yellow-700 disabled:opacity-50"
+                            >
+                                {loading ? 'Retrying...' : 'Retry'}
+                            </button>
+                        </div>
                     </div>
                 )}
 
-                {/* Leaderboard */}
+                {!error && leaderboardData.length > 0 && (
+                    <div className="max-w-3xl mx-auto mb-8 p-4 bg-green-50 border border-green-200 rounded-lg">
+                        <div className="flex items-center justify-between">
+                            <p className="text-green-700 text-sm">
+                                ✅ Live data from Railway backend • Auto-refreshes every 30s
+                            </p>
+                            <button
+                                onClick={() => fetchLeaderboardData(activeTab, pagination.currentPage, 10)}
+                                disabled={loading}
+                                className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 disabled:opacity-50"
+                            >
+                                {loading ? 'Refreshing...' : '🔄 Refresh'}
+                            </button>
+                        </div>
+                    </div>
+                )}                {/* Leaderboard */}
                 <Leaderboard
                     title={activeTab === 'students' ? "Most Active Students" : "Top Event Organizers"}
                     subtitle={
